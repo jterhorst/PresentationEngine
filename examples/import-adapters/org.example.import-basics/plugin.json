@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "id": "org.example.import-basics",
+  "name": "Basic importers",
+  "version": "1.0.0",
+  "engine_protocol": { "major": 1, "min_minor": 0 },
+  "license": "MPL-2.0",
+  "description": "Reference import adapters for Word documents and plain-text lyrics. Importer-only: no long-running process.",
+  "importers": [
+    {
+      "id": "docx",
+      "name": "Word document",
+      "command": "adapters/docx_reference.py",
+      "file_types": [
+        {
+          "uttype": "org.openxmlformats.wordprocessingml.document",
+          "extensions": ["docx"],
+          "mime_types": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+        }
+      ],
+      "options": "options-docx.json",
+      "options_defaults": { "split_on": "none", "lines_per_slide": 0, "title_slide": false, "keep_formatting": true }
+    },
+    {
+      "id": "plaintext",
+      "name": "Plain text lyrics",
+      "command": "adapters/plaintext.py",
+      "file_types": [ { "uttype": "public.plain-text", "extensions": ["txt"], "mime_types": ["text/plain"] } ],
+      "options": "options-text.json",
+      "options_defaults": { "first_line_is_title": true, "lines_per_slide": 0, "title_slide": false }
+    }
+  ]
+}

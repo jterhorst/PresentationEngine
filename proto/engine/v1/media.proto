@@ -1,0 +1,40 @@
+// Media transfer for remote and headless engines.
+// Local clients on the same machine may skip upload when the engine can read
+// hint_path directly and its hash matches (capability "media.local_path").
+syntax = "proto3";
+
+package engine.v1;
+
+option cc_enable_arenas = true;
+
+// Which of these hashes does the engine lack?
+message MediaQuery {
+  repeated string content_hashes = 1;
+}
+
+message MediaQueryResult {
+  repeated string missing_hashes = 1;
+}
+
+// Reply.ok.id = upload_id.
+message MediaUploadBegin {
+  string content_hash = 1;        // "sha256:<hex>"
+  uint64 size_bytes = 2;
+  string filename = 3;
+}
+
+// Chunks of at most 1 MiB, in any order; the engine tracks received ranges.
+message MediaUploadChunk {
+  string upload_id = 1;
+  uint64 offset = 2;
+  bytes data = 3;
+}
+
+// The engine verifies the hash before replying ok.
+message MediaUploadCommit {
+  string upload_id = 1;
+}
+
+message MediaUploadCancel {
+  string upload_id = 1;
+}

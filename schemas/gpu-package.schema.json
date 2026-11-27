@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/engine/schemas/gpu-package.schema.json",
+  "title": "GPU package manifest (package.json)",
+  "description": "Tier 1 plugin: shaders and media only, no native code. Shaders are Slang, compiled at install time. Every shader pass imports engine_effect (shaders/engine_effect.slang).",
+  "type": "object",
+  "required": ["schema_version", "id", "name", "version", "engine_api"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "$ref": "#/$defs/reverseDns" },
+    "name": { "type": "string", "minLength": 1 },
+    "version": { "$ref": "#/$defs/semver" },
+    "engine_api": { "type": "integer", "minimum": 1, "description": "Shader interface version (engine_effect.slang ENGINE_EFFECT_API)." },
+    "license": { "type": "string", "description": "SPDX identifier" },
+    "author": { "type": "string" },
+    "description": { "type": "string" },
+    "media": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/media" }
+    },
+    "effects": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/effect" }
+    },
+    "transitions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/transition" }
+    },
+    "sources": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/source" }
+    }
+  },
+  "$defs": {
+    "reverseDns": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9][a-z0-9-]*)+$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Also used as the Slang field or texture name, so it must be a valid identifier."
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$"
+    },
+    "relativePath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*\\.\\.)[^\\\\]+$"
+    },
+    "media": {
+      "type": "object",
+      "required": ["id", "file", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "file": { "$ref": "#/$defs/relativePath" },
+        "kind": { "enum": ["image", "video"] },
+        "has_alpha": { "type": "boolean", "default": false },
+        "loop": { "type": "boolean", "default": true, "description": "Video media loops when shorter than what it is applied to." }
+      }
+    },
+    "param": {
+      "type": "object",
+      "required": ["id", "label", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string" },
+        "type": { "enum": ["number", "integer", "boolean", "color", "vec2", "choice", "media"] },
+        "default": {},
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "step": { "type": "number" },
+        "unit": { "type": "string" },
+        "choices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "label": { "type": "string" }
+            }
+          }
+        }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "const": "choice" } } }, "then": { "required": ["choices"] } }
+      ]
+    },
+    "shaderRef": {
+      "type": "object",
+      "required": ["file", "entry"],
+      "additionalProperties": false,
+      "properties": {
+        "file": { "$ref": "#/$defs/relativePath" },
+        "entry": { "$ref": "#/$defs/identifier" }
+      }
+    },
+    "pass": {
+      "type": "object",
+      "required": ["id", "file", "entry"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "file": { "$ref": "#/$defs/relativePath" },
+        "entry": { "$ref": "#/$defs/identifier" },
+        "scale": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "default": 1, "description": "Render this pass at a fraction of the output size." },
+        "inputs": {
+          "type": "array",
+          "description": "Bound to the pass as engine_input0..3: 'source', 'pass:<id>' (an earlier pass) or 'media:<id>'.",
+          "maxItems": 4,
+          "items": { "type": "string", "pattern": "^(source|from|to|pass:[a-z][a-z0-9_]*|media:[a-z][a-z0-9_]*)$" }
+        }
+      }
+    },
+    "program": {
+      "description": "Either one shader, or ordered passes where the last pass is the result.",
+      "oneOf": [
+        { "type": "object", "required": ["shader"], "properties": { "shader": { "$ref": "#/$defs/shaderRef" } } },
+        { "type": "object", "required": ["passes"], "properties": { "passes": { "type": "array", "minItems": 1, "maxItems": 8, "items": { "$ref": "#/$defs/pass" } } } }
+      ]
+    },
+    "common": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "name": { "type": "string" },
+        "params": { "type": "array", "items": { "$ref": "#/$defs/param" } },
+        "textures": {
+          "type": "array",
+          "description": "Package media bound by name as Texture2D<float4> tex_<id>.",
+          "items": { "$ref": "#/$defs/identifier" }
+        },
+        "cost": { "enum": ["low", "medium", "high"], "default": "low", "description": "Hint for the UI; the engine measures real cost." }
+      }
+    },
+    "effect": {
+      "allOf": [
+        { "$ref": "#/$defs/common" },
+        { "$ref": "#/$defs/program" },
+        {
+          "properties": {
+            "id": true, "name": true, "params": true, "textures": true, "cost": true, "shader": true, "passes": true,
+            "expands_bounds": { "type": "number", "minimum": 0, "default": 0, "description": "Extra margin in canvas units the effect draws outside the element box (glows, shadows)." }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "transition": {
+      "allOf": [
+        { "$ref": "#/$defs/common" },
+        { "$ref": "#/$defs/program" },
+        {
+          "properties": {
+            "id": true, "name": true, "params": true, "textures": true, "cost": true, "shader": true, "passes": true,
+            "default_duration_ms": { "type": "integer", "minimum": 0, "default": 500 }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "source": {
+      "allOf": [
+        { "$ref": "#/$defs/common" },
+        { "$ref": "#/$defs/program" },
+        {
+          "properties": {
+            "id": true, "name": true, "params": true, "textures": true, "cost": true, "shader": true, "passes": true,
+            "animated": { "type": "boolean", "default": true, "description": "False lets the engine cache the result until params change." }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

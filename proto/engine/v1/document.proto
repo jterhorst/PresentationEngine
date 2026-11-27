@@ -1,0 +1,473 @@
+// The document the controller pushes to the engine: playlist, presentations,
+// slides, elements, fixtures, stage layouts and media references.
+//
+// The engine never edits a document. It assigns revisions and reports state.
+//
+// Extensibility (details in CONTRACTS.md "Data model and extensions"):
+// - Every persistent entity carries `metadata` (operator-visible key/values) and
+//   `extensions` (structured data owned by a plugin or app, keyed by its id).
+// - Field numbers 1-49 are core fields. 50 = metadata, 51 = extensions on every
+//   entity. 100-199 are reserved for future core use; never use them in forks.
+// - Every client and the engine must round-trip extensions, metadata and unknown
+//   fields untouched, even for plugins that are not installed.
+syntax = "proto3";
+
+package engine.v1;
+
+import "google/protobuf/struct.proto";
+import "engine/v1/common.proto";
+
+option cc_enable_arenas = true;
+
+// Data a plugin (or app) persists on an entity. Keyed by owner id in `extensions`.
+message Extension {
+  // The owner's own schema version for `data`; the owner migrates old versions on read.
+  uint32 schema_version = 1;
+  // JSON-compatible tree. Numbers are doubles: store 64-bit integers as strings.
+  google.protobuf.Struct data = 2;
+  // Optional opaque bytes for data that isn't JSON-friendly. Counts toward the size limit.
+  bytes binary = 3;
+}
+
+message Document {
+  string id = 1;
+  uint64 revision = 2;        // assigned by the engine; ignored on LoadDocument
+  Size canvas = 3;            // design canvas, e.g. 1920x1080
+  Playlist playlist = 4;
+  repeated Presentation presentations = 5;
+  repeated MediaRef media = 6;
+  repeated FixtureDef fixtures = 7;
+  repeated StageLayout stage_layouts = 8;
+  uint32 model_version = 9;   // document model version the file was written with
+  Perspective default_perspective = 10; // camera for every 3D container unless overridden
+  map<string, string> metadata = 50;
+  map<string, Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+message Playlist {
+  string id = 1;
+  string name = 2;
+  repeated PlaylistItem items = 3;
+  map<string, string> metadata = 50;
+  map<string, Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+message PlaylistItem {
+  string id = 1;
+  oneof item {
+    string presentation_id = 2;
+    string media_id = 3;   // a media cue: plays as a full-frame slide
+    string header = 4;     // a label row, not playable
+  }
+  map<string, string> metadata = 50;
+  map<string, Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+message Presentation {
+  string id = 1;
+  string name = 2;
+  repeated Slide slides = 3;
+  TransitionSpec default_transition = 4;
+  map<string, string> metadata = 50;
+  map<string, Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+message Slide {
+  string id = 1;
+  string label = 2;
+  Color tag_color = 3;                 // UI only
+  repeated Element elements = 4;       // drawn back to front by depth, ties in list order
+  optional Background background = 5;  // unset = leave the background unchanged
+  optional TransitionSpec transition = 6; // unset = presentation default
+  optional Perspective perspective = 10;   // unset = document default
+  repeated SlideAction actions = 7;    // run when the slide is taken
+  string notes = 8;
+  map<string, string> metadata = 50;   // visible to plugins in SLIDE_TAKEN events
+  map<string, Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+message Element {
+  string id = 1;
+  string name = 2;
+  Transform transform = 3;
+  float opacity = 4;                   // 0..1; unset (0) is treated as 1 unless hidden
+  bool hidden = 5;
+  BlendMode blend_mode = 6;
+  BlendSpace blend_space = 7;
+  Mask mask = 8;
+  repeated EffectInstance effects = 9; // applied in order
+  oneof content {
+    TextElement text = 20;
+    ShapeElement shape = 21;
+    MediaElement media = 22;
+    LiveInputElement live_input = 23;
+    SourceElement source = 24;         // procedural content from a GPU package
+    PluginElement plugin = 25;         // element type defined by a logic plugin
+    // 26-49: future core element types
+  }
+  map<string, string> metadata = 50;
+  map<string, Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+// An element type a logic plugin defines (e.g. "scripture", "timer_display").
+// The plugin turns `data` into ordinary elements ahead of time (see
+// ResolvePluginElements in plugin.proto); the engine never waits on it at take time.
+// If the plugin is missing or hasn't resolved yet, the engine renders `fallback`.
+message PluginElement {
+  string plugin_id = 1;
+  string type = 2;                     // declared in the plugin manifest's element_types
+  Extension content = 3;               // the element's own data, owned by plugin_id
+  repeated Element fallback = 4;       // last resolved result, saved by the UI; children use box-relative transforms
+}
+
+// Styled text laid out inside a container.
+//
+// Content: `rtf` is the authoritative styled text when present (RTF 1.x, the
+// supported subset is listed in CONTRACTS.md). `runs` is used only when `rtf`
+// is empty, e.g. for text built by plugins or tools without an RTF writer.
+// Text in either form may contain bindings, e.g. "Next: {slide.next.text}",
+// which the engine resolves every frame (grammar in CONTRACTS.md).
+//
+// Layout: text flows inside `container` (a path in box coordinates) minus
+// `exclusions`. With no container, the box inset by `padding` is the container.
+message TextElement {
+  repeated TextRun runs = 1;
+  ParagraphStyle paragraph = 2;       // defaults; RTF paragraph settings override
+  VerticalAlign vertical_align = 3;
+  TextFit fit = 4;
+  EdgeInsets padding = 5;
+  bytes rtf = 6;
+  string plain_text = 7;              // UI-written plain mirror for search and plugins; the engine derives its own
+  optional Path container = 8;
+  repeated Path exclusions = 9;       // areas text wraps around
+  TextDirection direction = 10;
+}
+
+enum TextDirection {
+  TEXT_DIRECTION_UNSPECIFIED = 0;     // NATURAL: from the text's script
+  TEXT_DIRECTION_NATURAL = 1;
+  TEXT_DIRECTION_LEFT_TO_RIGHT = 2;
+  TEXT_DIRECTION_RIGHT_TO_LEFT = 3;
+}
+
+message TextRun {
+  string text = 1;
+  TextStyle style = 2;
+}
+
+message TextStyle {
+  string font_family = 1;
+  string font_postscript_name = 2; // preferred when present
+  float size_pt = 3;
+  uint32 weight = 4;               // 100..900
+  bool italic = 5;
+  Color fill = 6;
+  Stroke stroke = 7;
+  Shadow shadow = 8;
+  float tracking = 9;              // em/1000
+  bool underline = 10;
+  TextCase text_case = 11;
+}
+
+enum TextCase {
+  TEXT_CASE_UNSPECIFIED = 0;
+  TEXT_CASE_AS_TYPED = 1;
+  TEXT_CASE_UPPER = 2;
+  TEXT_CASE_LOWER = 3;
+}
+
+message ParagraphStyle {
+  TextAlign align = 1;
+  float line_height_multiple = 2;  // 0 = font default
+  float paragraph_spacing_pt = 3;
+}
+
+enum TextAlign {
+  TEXT_ALIGN_UNSPECIFIED = 0;
+  TEXT_ALIGN_LEFT = 1;
+  TEXT_ALIGN_CENTER = 2;
+  TEXT_ALIGN_RIGHT = 3;
+  TEXT_ALIGN_JUSTIFIED = 4;
+}
+
+enum VerticalAlign {
+  VERTICAL_ALIGN_UNSPECIFIED = 0;
+  VERTICAL_ALIGN_TOP = 1;
+  VERTICAL_ALIGN_MIDDLE = 2;
+  VERTICAL_ALIGN_BOTTOM = 3;
+}
+
+enum TextFit {
+  TEXT_FIT_UNSPECIFIED = 0;
+  TEXT_FIT_NONE = 1;            // overflow is clipped
+  TEXT_FIT_SHRINK_TO_FIT = 2;   // scale down uniformly until it fits
+}
+
+message EdgeInsets {
+  float top = 1;
+  float left = 2;
+  float bottom = 3;
+  float right = 4;
+}
+
+// Outline of a shape (its path) or of text glyphs.
+message Stroke {
+  Color color = 1;               // alpha is the stroke's opacity
+  float width = 2;               // thickness, canvas units; 0 = no stroke
+  StrokeAlignment alignment = 3; // shapes only; text strokes are centered
+  LineJoin join = 4;
+  LineCap cap = 5;               // open paths and dashes
+  repeated float dash_pattern = 6; // on/off lengths in canvas units; empty = solid
+  float dash_phase = 7;
+  float miter_limit = 8;         // 0 = engine default (4)
+}
+
+enum StrokeAlignment {
+  STROKE_ALIGNMENT_UNSPECIFIED = 0; // CENTER
+  STROKE_ALIGNMENT_CENTER = 1;
+  STROKE_ALIGNMENT_INSIDE = 2;      // closed paths only; open paths fall back to CENTER
+  STROKE_ALIGNMENT_OUTSIDE = 3;
+}
+
+enum LineJoin {
+  LINE_JOIN_UNSPECIFIED = 0;        // MITER
+  LINE_JOIN_MITER = 1;
+  LINE_JOIN_ROUND = 2;
+  LINE_JOIN_BEVEL = 3;
+}
+
+enum LineCap {
+  LINE_CAP_UNSPECIFIED = 0;         // BUTT
+  LINE_CAP_BUTT = 1;
+  LINE_CAP_ROUND = 2;
+  LINE_CAP_SQUARE = 3;
+}
+
+// Drawn in the element's local space, so it tilts with 3D rotation.
+message Shadow {
+  Color color = 1;               // alpha is the shadow's opacity
+  Vec2 offset = 2;               // canvas units, +y down
+  float blur_radius = 3;         // canvas units
+  float spread = 4;              // grows (or, negative, shrinks) the shape before blurring
+  bool inner = 5;                // shapes only: shadow inside the fill
+}
+
+// Paint order: outer shadows, fill, inner shadows, stroke.
+message ShapeElement {
+  ShapeKind kind = 1;
+  Color fill = 2;               // unset = no fill; alpha is the fill's opacity
+  Stroke stroke = 3;            // unset or width 0 = no stroke
+  float corner_radius = 4;      // RECTANGLE only
+  Path path = 5;                // PATH only, box coordinates
+  repeated Shadow shadows = 6;  // any mix of outer and inner, drawn in list order
+}
+
+enum ShapeKind {
+  SHAPE_KIND_UNSPECIFIED = 0;
+  SHAPE_KIND_RECTANGLE = 1;
+  SHAPE_KIND_ELLIPSE = 2;
+  SHAPE_KIND_PATH = 3;
+}
+
+message MediaElement {
+  string media_id = 1;
+  ContentFit fit = 2;
+  PlaybackSpec playback = 3;
+}
+
+message PlaybackSpec {
+  int64 in_ns = 1;
+  int64 out_ns = 2;             // 0 = end of media
+  double rate = 3;              // 0 = 1.0
+  float volume = 4;             // 0..1; unset (0) with muted=false is treated as 1
+  bool muted = 5;
+  EndBehavior end_behavior = 6;
+}
+
+enum EndBehavior {
+  END_BEHAVIOR_UNSPECIFIED = 0; // LOOP for backgrounds, HOLD_LAST_FRAME otherwise
+  END_BEHAVIOR_LOOP = 1;
+  END_BEHAVIOR_HOLD_LAST_FRAME = 2;
+  END_BEHAVIOR_CLEAR = 3;
+}
+
+enum ContentFit {
+  CONTENT_FIT_UNSPECIFIED = 0;  // FILL
+  CONTENT_FIT_FILL = 1;         // cover the box, crop overflow
+  CONTENT_FIT_FIT = 2;          // letterbox inside the box
+  CONTENT_FIT_STRETCH = 3;
+  CONTENT_FIT_NONE = 4;         // native size, centered
+}
+
+message LiveInputElement {
+  string input_id = 1;          // InputConfig.id
+  ContentFit fit = 2;
+  bool include_audio = 3;
+}
+
+// Procedural content from a GPU package "source" (see gpu-package.schema.json).
+message SourceElement {
+  string package_id = 1;
+  string source_id = 2;
+  map<string, ParamValue> params = 3;
+}
+
+message EffectInstance {
+  string id = 1;
+  string package_id = 2;        // "core" for built-ins
+  string effect_id = 3;
+  map<string, ParamValue> params = 4;
+  bool enabled = 5;
+  float opacity = 6;            // mix of effect result over input; unset (0) treated as 1
+  BlendMode blend_mode = 7;     // how the effect result combines with its input
+}
+
+message Mask {
+  oneof source {
+    string media_id = 1;          // pre-rendered mask media; loops if shorter than content
+    EffectInstance generator = 2; // shader-generated mask
+  }
+  MaskChannel channel = 3;
+  bool invert = 4;
+}
+
+enum MaskChannel {
+  MASK_CHANNEL_UNSPECIFIED = 0; // ALPHA
+  MASK_CHANNEL_ALPHA = 1;
+  MASK_CHANNEL_LUMA = 2;
+}
+
+message Background {
+  oneof kind {
+    Color color = 1;
+    Transparent transparent = 2;
+    MediaElement media = 3;
+    LiveInputElement live_input = 4;
+    SourceElement source = 5;
+  }
+  repeated EffectInstance effects = 6;
+}
+
+message Transparent {}
+
+// "core" provides "cut" and "dissolve". Others come from GPU packages.
+message TransitionSpec {
+  string package_id = 1;
+  string transition_id = 2;
+  uint32 duration_ms = 3;
+  Easing easing = 4;
+  map<string, ParamValue> params = 5;
+}
+
+message SlideAction {
+  oneof action {
+    string show_fixture_id = 1;
+    string dismiss_fixture_id = 2;
+    Background set_background = 3;
+    LayerTarget clear_layer = 4;
+    PluginTrigger plugin_trigger = 5;
+  }
+}
+
+// Delivered to the target logic plugin as a PLUGIN_TRIGGER event.
+message PluginTrigger {
+  string plugin_id = 1;
+  string action = 2;
+  string payload_json = 3;
+}
+
+enum LayerTarget {
+  LAYER_TARGET_UNSPECIFIED = 0;
+  LAYER_TARGET_BACKGROUND = 1;
+  LAYER_TARGET_SLIDE = 2;
+  LAYER_TARGET_FIXTURES = 3;      // operator-shown fixtures only
+  LAYER_TARGET_PLUGIN_LAYERS = 4;
+  LAYER_TARGET_ALL = 5;
+}
+
+message FixtureDef {
+  string id = 1;                // plugin fixtures are namespaced "plugin:<plugin_id>/<id>"
+  string name = 2;
+  int32 z = 3;                  // background = 0, slide = 100; any integer
+  repeated Element elements = 4;
+  TransitionSpec enter = 5;
+  TransitionSpec exit = 6;
+  optional Perspective perspective = 7;
+  map<string, string> metadata = 50;
+  map<string, Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+// Stage layouts render on outputs whose content is StageContent.
+// Text elements typically use bindings such as {slide.current.text}.
+message StageLayout {
+  string id = 1;
+  string name = 2;
+  Size canvas = 3;
+  Color background = 4;
+  repeated Element elements = 5;
+  optional Perspective perspective = 6;
+  map<string, string> metadata = 50;
+  map<string, Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+message MediaRef {
+  string id = 1;
+  string content_hash = 2;      // "sha256:<hex>"; how the engine resolves the file
+  string hint_path = 3;         // original path on the client machine, informational
+  MediaKind kind = 4;
+  int64 duration_ns = 5;        // 0 for stills
+  Size natural_size = 6;
+  bool has_alpha = 7;
+  bool has_audio = 8;
+  map<string, string> metadata = 50;
+  map<string, Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+enum MediaKind {
+  MEDIA_KIND_UNSPECIFIED = 0;
+  MEDIA_KIND_IMAGE = 1;
+  MEDIA_KIND_VIDEO = 2;
+  MEDIA_KIND_AUDIO = 3;
+}
+
+// Controller -> engine: replace the whole document.
+// Reply.ok.revision carries the new revision. Missing media => MEDIA_MISSING
+// with field_path naming the first missing media id; query and upload first.
+message LoadDocument {
+  Document document = 1;
+}
+
+// Controller -> engine: upsert or remove top-level entities.
+// Requires capability "document.patch". Fails with STALE_REVISION if base_revision
+// is not the engine's current revision.
+message PatchDocument {
+  uint64 base_revision = 1;
+  repeated EntityUpsert upserts = 2;
+  repeated string removed_ids = 3;
+}
+
+message EntityUpsert {
+  oneof entity {
+    Presentation presentation = 1;  // replaces the presentation and all its slides
+    Slide slide = 2;                // requires presentation_id
+    FixtureDef fixture = 3;
+    StageLayout stage_layout = 4;
+    MediaRef media = 5;
+    Playlist playlist = 6;
+  }
+  string presentation_id = 10;      // parent for slide upserts
+}
+
+// Engine -> every client after the document changes (and once on connect).
+message DocumentSnapshot {
+  Document document = 1;
+}

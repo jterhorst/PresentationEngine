@@ -1,0 +1,68 @@
+// Live commands. Controller only; others get ERROR_CODE_NOT_CONTROLLER.
+//
+// A command is validated when received (Reply) and applied atomically at the
+// next frame edge (StateEvent with the engine time it took effect).
+syntax = "proto3";
+
+package engine.v1;
+
+import "engine/v1/document.proto";
+
+option cc_enable_arenas = true;
+
+message Command {
+  oneof kind {
+    TakeSlide take_slide = 1;
+    Retake retake = 2;
+    ClearLayer clear_layer = 3;
+    SetBackground set_background = 4;
+    ShowFixture show_fixture = 5;
+    DismissFixture dismiss_fixture = 6;
+    MediaTransport media_transport = 7;
+  }
+}
+
+// Show a slide from the current document revision. Runs its SlideActions.
+message TakeSlide {
+  string presentation_id = 1;
+  string slide_id = 2;
+  optional TransitionSpec transition_override = 3;
+}
+
+// Re-display the live slide from the current document revision.
+// Edits never re-display on their own; this is the only way.
+message Retake {
+  optional TransitionSpec transition_override = 1;
+}
+
+message ClearLayer {
+  LayerTarget layer = 1;
+  optional TransitionSpec transition = 2;
+}
+
+message SetBackground {
+  Background background = 1;
+  optional TransitionSpec transition = 2;
+}
+
+message ShowFixture {
+  string fixture_id = 1;
+}
+
+message DismissFixture {
+  string fixture_id = 1;
+}
+
+message MediaTransport {
+  string element_id = 1;     // element on a live layer, or "background"
+  TransportAction action = 2;
+  int64 seek_to_ns = 3;      // SEEK only
+}
+
+enum TransportAction {
+  TRANSPORT_ACTION_UNSPECIFIED = 0;
+  TRANSPORT_ACTION_PLAY = 1;
+  TRANSPORT_ACTION_PAUSE = 2;
+  TRANSPORT_ACTION_SEEK = 3;
+  TRANSPORT_ACTION_RESTART = 4;
+}

@@ -1,0 +1,86 @@
+// Live engine state: full snapshots plus ordered deltas.
+//
+// Sync rule: apply StateEvents in state_revision order. If an event's
+// state_revision is not exactly last + 1 (or a Heartbeat shows a higher
+// revision than you have), send StateSnapshotRequest and replace your copy.
+syntax = "proto3";
+
+package engine.v1;
+
+import "engine/v1/document.proto";
+import "engine/v1/output.proto";
+import "engine/v1/session.proto";
+
+option cc_enable_arenas = true;
+
+message LiveSlide {
+  string presentation_id = 1;
+  string slide_id = 2;
+  uint64 taken_from_revision = 3; // document revision the slide was rendered from
+  bool stale = 4;                 // the document has changed this slide since
+  int64 taken_at_ns = 5;
+}
+
+message LiveBackground {
+  Background background = 1;
+  string owner = 2;               // "operator", "slide:<id>" or "plugin:<id>"
+  int64 set_at_ns = 3;
+}
+
+message LiveFixture {
+  string fixture_id = 1;
+  string owner = 2;
+  int32 z = 3;
+  int64 shown_at_ns = 4;
+}
+
+message LivePluginLayer {
+  string layer_id = 1;
+  string plugin_id = 2;
+  int32 z = 3;
+}
+
+message StateSnapshotRequest {}
+
+message StateSnapshot {
+  uint64 state_revision = 1;
+  uint64 document_revision = 2;
+  int64 engine_time_ns = 3;
+  LiveBackground background = 4;   // unset = cleared
+  LiveSlide slide = 5;             // unset = cleared
+  repeated LiveFixture fixtures = 6;
+  repeated LivePluginLayer plugin_layers = 7;
+  repeated OutputStatus outputs = 8;
+  repeated InputStatus inputs = 9;
+  ControlSeat seat = 10;
+  IoConfigure io = 11;             // current I/O configuration
+}
+
+message StateEvent {
+  uint64 state_revision = 1;
+  int64 engine_time_ns = 2;        // when it took effect on the frame edge
+  oneof event {
+    LiveSlide slide_changed = 10;
+    LiveBackground background_changed = 11;
+    LiveFixture fixture_shown = 12;
+    string fixture_dismissed = 13;          // fixture_id
+    LayerTarget layer_cleared = 14;
+    LiveSlide live_slide_stale_changed = 15;
+    LivePluginLayer plugin_layer_added = 16;
+    string plugin_layer_removed = 17;       // layer_id
+    OutputStatus output_status = 18;
+    InputStatus input_status = 19;
+    MediaEnded media_ended = 20;
+    TransitionFinished transition_finished = 21;
+    IoConfigure io_changed = 22;
+  }
+}
+
+message MediaEnded {
+  string element_id = 1;
+  string media_id = 2;
+}
+
+message TransitionFinished {
+  LayerTarget layer = 1;
+}

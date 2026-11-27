@@ -1,0 +1,891 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/engine/schemas/ui-schema.schema.json",
+  "title": "Declarative plugin and settings UI",
+  "description": "The core never renders UI. Plugins (and engine settings) describe controls here; each client renders them natively. Controls read from the plugin's state JSON via 'bind' paths. A user change never writes state directly: the client sends PluginAction {action: control.action or 'set', payload: {path, value}} and the plugin publishes new state. Inspectors are different: they edit an entity's extension data, and the UI writes those edits straight into the document it owns (see 'inspector'). Plugins declare 'panels', each with the placements it allows in the main window (see workspace-layout.schema.json). A file with only a top-level 'layout' (e.g. a settings schema) is one panel; for a plugin it is treated as panel 'main' in the drawer.",
+  "type": "object",
+  "required": [
+    "schema"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "layout": {
+      "$ref": "#/$defs/node"
+    },
+    "inspectors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/inspector"
+      }
+    },
+    "panels": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/panel"
+      }
+    }
+  },
+  "$defs": {
+    "bindPath": {
+      "type": "string",
+      "description": "Path into state. Absolute: 'timers', 'settings.color', 'timers[0].name'. Inside a list item, paths starting with '.' are relative to the item: '.name'. In an inspector, paths read and write the selected entity's extension data (or PluginElement content); paths starting with '$state.' read plugin state, read-only.",
+      "pattern": "^(\\$state\\.|\\.)?[A-Za-z_][A-Za-z0-9_]*(\\[[0-9]+\\])?(\\.[A-Za-z_][A-Za-z0-9_]*(\\[[0-9]+\\])?)*$"
+    },
+    "actionName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]*$"
+    },
+    "payload": {
+      "description": "Literal JSON sent with the action. Within it, {\"$item\": \"field\"} is replaced by the list item's field and {\"$value\": true} by the control's new value. In an inspector, {\"$entity\": true} is replaced by the selected entity's id."
+    },
+    "node": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/section"
+        },
+        {
+          "$ref": "#/$defs/row"
+        },
+        {
+          "$ref": "#/$defs/column"
+        },
+        {
+          "$ref": "#/$defs/grid"
+        },
+        {
+          "$ref": "#/$defs/list"
+        },
+        {
+          "$ref": "#/$defs/label"
+        },
+        {
+          "$ref": "#/$defs/divider"
+        },
+        {
+          "$ref": "#/$defs/button"
+        },
+        {
+          "$ref": "#/$defs/toggle"
+        },
+        {
+          "$ref": "#/$defs/slider"
+        },
+        {
+          "$ref": "#/$defs/number"
+        },
+        {
+          "$ref": "#/$defs/text"
+        },
+        {
+          "$ref": "#/$defs/select"
+        },
+        {
+          "$ref": "#/$defs/color"
+        },
+        {
+          "$ref": "#/$defs/time"
+        },
+        {
+          "$ref": "#/$defs/media"
+        },
+        {
+          "$ref": "#/$defs/readout"
+        }
+      ]
+    },
+    "children": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/node"
+      }
+    },
+    "section": {
+      "type": "object",
+      "required": [
+        "type",
+        "children"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "section"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "title": {
+          "type": "string"
+        },
+        "collapsible": {
+          "type": "boolean",
+          "default": false
+        },
+        "children": {
+          "$ref": "#/$defs/children"
+        }
+      }
+    },
+    "row": {
+      "type": "object",
+      "required": [
+        "type",
+        "children"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "row"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "children": {
+          "$ref": "#/$defs/children"
+        }
+      }
+    },
+    "column": {
+      "type": "object",
+      "required": [
+        "type",
+        "children"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "column"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "children": {
+          "$ref": "#/$defs/children"
+        }
+      }
+    },
+    "grid": {
+      "type": "object",
+      "required": [
+        "type",
+        "columns",
+        "children"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "grid"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "columns": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "children": {
+          "$ref": "#/$defs/children"
+        }
+      }
+    },
+    "list": {
+      "type": "object",
+      "required": [
+        "type",
+        "bind",
+        "item"
+      ],
+      "additionalProperties": false,
+      "description": "Repeats 'item' for each element of the array at 'bind'. Each array element should carry a stable 'id'.",
+      "properties": {
+        "type": {
+          "const": "list"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "bind": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "item": {
+          "$ref": "#/$defs/node"
+        },
+        "empty_text": {
+          "type": "string"
+        },
+        "reorder_action": {
+          "$ref": "#/$defs/actionName",
+          "description": "If set, the client allows drag reordering and sends {from, to}."
+        }
+      }
+    },
+    "label": {
+      "type": "object",
+      "required": [
+        "type",
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "label"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "text": {
+          "type": "string"
+        },
+        "style": {
+          "enum": [
+            "body",
+            "secondary",
+            "heading"
+          ],
+          "default": "body"
+        }
+      }
+    },
+    "divider": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "divider"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        }
+      }
+    },
+    "button": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "action"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "button"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "label": {
+          "type": "string"
+        },
+        "action": {
+          "$ref": "#/$defs/actionName"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload"
+        },
+        "style": {
+          "enum": [
+            "default",
+            "primary",
+            "destructive"
+          ],
+          "default": "default"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "If set, the client asks the operator to confirm with this text."
+        }
+      }
+    },
+    "toggle": {
+      "$ref": "#/$defs/boundControl",
+      "properties": {
+        "type": {
+          "const": "toggle"
+        }
+      }
+    },
+    "color": {
+      "$ref": "#/$defs/boundControl",
+      "properties": {
+        "type": {
+          "const": "color"
+        }
+      }
+    },
+    "boundControl": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "bind"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "toggle",
+            "color"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "label": {
+          "type": "string"
+        },
+        "bind": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "action": {
+          "$ref": "#/$defs/actionName"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload"
+        }
+      },
+      "additionalProperties": false
+    },
+    "slider": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "bind",
+        "min",
+        "max"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "slider"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "label": {
+          "type": "string"
+        },
+        "bind": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "action": {
+          "$ref": "#/$defs/actionName"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "step": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "send": {
+          "enum": [
+            "continuous",
+            "on_release"
+          ],
+          "default": "on_release"
+        }
+      }
+    },
+    "number": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "bind"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "label": {
+          "type": "string"
+        },
+        "bind": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "action": {
+          "$ref": "#/$defs/actionName"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "step": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "integer": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "text": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "bind"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "text"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "label": {
+          "type": "string"
+        },
+        "bind": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "action": {
+          "$ref": "#/$defs/actionName"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "multiline": {
+          "type": "boolean",
+          "default": false
+        },
+        "max_length": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "select": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "bind"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "select"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "label": {
+          "type": "string"
+        },
+        "bind": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "action": {
+          "$ref": "#/$defs/actionName"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "value",
+              "label"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "value": {},
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "options_bind": {
+          "$ref": "#/$defs/bindPath",
+          "description": "State array of {value, label} objects, for options that change at runtime."
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "options"
+          ]
+        },
+        {
+          "required": [
+            "options_bind"
+          ]
+        }
+      ]
+    },
+    "time": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "bind",
+        "mode"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "time"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "label": {
+          "type": "string"
+        },
+        "bind": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "action": {
+          "$ref": "#/$defs/actionName"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload"
+        },
+        "mode": {
+          "enum": [
+            "duration",
+            "time_of_day"
+          ],
+          "description": "duration: value in milliseconds. time_of_day: 'HH:MM:SS' local time."
+        }
+      }
+    },
+    "media": {
+      "type": "object",
+      "required": [
+        "type",
+        "label",
+        "bind"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "media"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "enabled_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "label": {
+          "type": "string"
+        },
+        "bind": {
+          "$ref": "#/$defs/bindPath",
+          "description": "Holds a media_id; the client uploads or resolves the file first."
+        },
+        "action": {
+          "$ref": "#/$defs/actionName"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload"
+        },
+        "kinds": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "image",
+              "video",
+              "audio"
+            ]
+          }
+        }
+      }
+    },
+    "readout": {
+      "type": "object",
+      "required": [
+        "type",
+        "bind"
+      ],
+      "additionalProperties": false,
+      "description": "Read-only display. format 'countdown' / 'stopwatch' expects a Countdown / Stopwatch-shaped object (see plugin.proto) and is animated locally by the client from Heartbeat engine time, with no per-second state traffic.",
+      "properties": {
+        "type": {
+          "const": "readout"
+        },
+        "id": {
+          "type": "string"
+        },
+        "visible_when": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "label": {
+          "type": "string"
+        },
+        "bind": {
+          "$ref": "#/$defs/bindPath"
+        },
+        "format": {
+          "enum": [
+            "text",
+            "number",
+            "countdown",
+            "stopwatch",
+            "boolean"
+          ],
+          "default": "text"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Format pattern, same grammar as binding formats, e.g. 'mm:ss'."
+        },
+        "style": {
+          "enum": [
+            "body",
+            "large",
+            "status"
+          ],
+          "default": "body"
+        }
+      }
+    },
+    "inspector": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "applies_to",
+        "layout"
+      ],
+      "additionalProperties": false,
+      "description": "A panel the UI shows in its inspector when a matching entity is selected. Bound controls edit extensions[plugin_id].data on that entity (or PluginElement.content.data); the UI applies the edit to its document and sends PatchDocument. Buttons still send PluginAction.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "applies_to": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "document",
+              "playlist",
+              "playlist_item",
+              "presentation",
+              "slide",
+              "element",
+              "plugin_element",
+              "fixture",
+              "stage_layout",
+              "media"
+            ]
+          }
+        },
+        "element_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "For plugin_element: which of the plugin's element types."
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Extension schema version written by edits from this inspector."
+        },
+        "layout": {
+          "$ref": "#/$defs/node"
+        }
+      }
+    },
+    "panel": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "placements",
+        "layout"
+      ],
+      "additionalProperties": false,
+      "description": "A plugin panel. Referenced from layouts as 'plugin:<plugin_id>/<id>'.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Generic symbol name (e.g. 'timer'); clients map it to their icon set."
+        },
+        "placements": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "sidebar",
+              "drawer",
+              "playback",
+              "main"
+            ]
+          },
+          "description": "Where this panel may go. The toolbar is reserved for core panels for now."
+        },
+        "default_placement": {
+          "enum": [
+            "sidebar",
+            "drawer",
+            "playback",
+            "main"
+          ]
+        },
+        "min_height": {
+          "type": "number",
+          "minimum": 0
+        },
+        "show_only_when_controller": {
+          "type": "boolean",
+          "default": false
+        },
+        "layout": {
+          "$ref": "#/$defs/node"
+        }
+      }
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "layout"
+      ]
+    },
+    {
+      "required": [
+        "panels"
+      ]
+    },
+    {
+      "required": [
+        "inspectors"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "id": "core.default",
+  "name": "Default",
+  "provider": "core",
+  "panes": {
+    "toolbar": {
+      "leading": [
+        "core.search",
+        "core.engine_status"
+      ],
+      "center": [
+        "core.mode_switch",
+        "core.drawer_toggle"
+      ],
+      "trailing": [
+        "core.clear_controls"
+      ]
+    },
+    "sidebar": {
+      "visible": true,
+      "width": 240,
+      "panels": [
+        {
+          "panel": "core.libraries"
+        },
+        {
+          "panel": "core.playlists"
+        }
+      ]
+    },
+    "main": {
+      "panels": [
+        {
+          "panel": "core.document_view"
+        }
+      ]
+    },
+    "edit": {
+      "panels": [
+        {
+          "panel": "core.slide_navigator",
+          "width": 160
+        },
+        {
+          "panel": "core.slide_editor"
+        },
+        {
+          "panel": "core.inspector",
+          "width": 280
+        }
+      ]
+    },
+    "drawer": {
+      "panels": [
+        "plugin:org.example.timers/controls"
+      ],
+      "open_panel": null,
+      "height": 220
+    },
+    "playback": {
+      "visible": true,
+      "width": 320,
+      "panels": [
+        {
+          "panel": "core.output_previews"
+        },
+        {
+          "panel": "core.live_layers"
+        },
+        {
+          "panel": "plugin:org.example.timers/running",
+          "collapsed": false
+        }
+      ]
+    }
+  }
+}

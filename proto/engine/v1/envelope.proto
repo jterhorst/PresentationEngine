@@ -1,0 +1,110 @@
+// Wire envelope. Every frame on a connection is exactly one ClientMessage
+// (client -> engine) or EngineMessage (engine -> client). Framing per transport
+// is described in CONTRACTS.md.
+syntax = "proto3";
+
+package engine.v1;
+
+import "engine/v1/common.proto";
+import "engine/v1/session.proto";
+import "engine/v1/document.proto";
+import "engine/v1/command.proto";
+import "engine/v1/state.proto";
+import "engine/v1/output.proto";
+import "engine/v1/preview.proto";
+import "engine/v1/media.proto";
+import "engine/v1/plugin.proto";
+import "engine/v1/settings.proto";
+
+option cc_enable_arenas = true;
+
+message ClientMessage {
+  // Nonzero when the client wants a correlated response (EngineMessage.reply_to).
+  // Unique per connection; a simple counter is fine.
+  uint64 request_id = 1;
+
+  oneof body {
+    // Session and control
+    Hello hello = 10;
+    Goodbye goodbye = 11;
+    ControlRequest control_request = 12;
+    ControlPinSubmit control_pin_submit = 13;
+    ReleaseControl release_control = 14;
+
+    // Document (controller)
+    LoadDocument load_document = 20;
+    PatchDocument patch_document = 21;
+
+    // Live control (controller)
+    Command command = 30;
+    IoConfigure io_configure = 31;
+
+    // State
+    StateSnapshotRequest state_snapshot_request = 40;
+
+    // Previews and thumbnails
+    PreviewSubscribe preview_subscribe = 50;
+    PreviewUnsubscribe preview_unsubscribe = 51;
+    ThumbnailRequest thumbnail_request = 52;
+
+    // Media
+    MediaQuery media_query = 60;
+    MediaUploadBegin media_upload_begin = 61;
+    MediaUploadChunk media_upload_chunk = 62;
+    MediaUploadCommit media_upload_commit = 63;
+    MediaUploadCancel media_upload_cancel = 64;
+
+    // Plugins (UI side; controller for actions)
+    PluginAction plugin_action = 70;
+
+    // Settings
+    SettingsGet settings_get = 80;
+    SettingsSet settings_set = 81;
+
+    // Logic plugin role only
+    PluginMessage plugin = 100;
+  }
+}
+
+message EngineMessage {
+  uint64 seq = 1;       // per connection, strictly increasing from 1
+  uint64 reply_to = 2;  // request_id this answers; 0 = unsolicited
+
+  oneof body {
+    // Session and control
+    Welcome welcome = 10;
+    Reply reply = 11;
+    RoleChanged role_changed = 12;
+    ControlPinIssued control_pin_issued = 13;
+    ControlRequestEnded control_request_ended = 14;
+    Heartbeat heartbeat = 15;
+    Goodbye goodbye = 16;
+
+    // Document
+    DocumentSnapshot document = 20;
+
+    // State
+    StateSnapshot state_snapshot = 40;
+    StateEvent state_event = 41;
+
+    // Previews and thumbnails
+    PreviewFrame preview_frame = 50;
+    Thumbnail thumbnail = 52;
+
+    // Media
+    MediaQueryResult media_query_result = 60;
+
+    // Plugins
+    PluginCatalog plugin_catalog = 70;
+    PluginUi plugin_ui = 71;
+    PluginState plugin_state = 72;
+    ExtensionProposal extension_proposal = 73;          // controller only
+    PluginElementsResolved plugin_elements_resolved = 74;
+
+    // Settings
+    SettingsValues settings = 80;
+
+    // Logic plugin role only
+    EngineToPlugin plugin = 100;
+  }
+}

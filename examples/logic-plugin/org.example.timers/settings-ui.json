@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "layout": {
+    "type": "section",
+    "title": "Timer settings",
+    "children": [
+      { "type": "toggle", "label": "Count up after zero (overtime)", "bind": "overtime" },
+      {
+        "type": "select", "label": "Display format", "bind": "format",
+        "options": [
+          { "value": "mm:ss", "label": "12:34" },
+          { "value": "h:mm:ss", "label": "1:12:34" }
+        ]
+      }
+    ]
+  }
+}

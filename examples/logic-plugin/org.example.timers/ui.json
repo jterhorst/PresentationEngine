@@ -1,0 +1,235 @@
+{
+  "schema": 1,
+  "panels": [
+    {
+      "id": "controls",
+      "title": "Timers",
+      "icon": "timer",
+      "placements": [
+        "drawer",
+        "sidebar"
+      ],
+      "default_placement": "drawer",
+      "layout": {
+        "type": "section",
+        "children": [
+          {
+            "type": "list",
+            "bind": "timers",
+            "empty_text": "No timers yet",
+            "reorder_action": "reorder",
+            "item": {
+              "type": "row",
+              "children": [
+                {
+                  "type": "text",
+                  "label": "Name",
+                  "bind": ".name"
+                },
+                {
+                  "type": "time",
+                  "label": "Length",
+                  "bind": ".duration_ms",
+                  "mode": "duration",
+                  "action": "set_duration",
+                  "payload": {
+                    "id": {
+                      "$item": "id"
+                    },
+                    "value": {
+                      "$value": true
+                    }
+                  }
+                },
+                {
+                  "type": "readout",
+                  "label": "Remaining",
+                  "bind": ".countdown",
+                  "format": "countdown",
+                  "pattern": "mm:ss",
+                  "style": "large"
+                },
+                {
+                  "type": "button",
+                  "label": "Start",
+                  "action": "start",
+                  "style": "primary",
+                  "payload": {
+                    "id": {
+                      "$item": "id"
+                    }
+                  },
+                  "visible_when": ".stopped"
+                },
+                {
+                  "type": "button",
+                  "label": "Pause",
+                  "action": "pause",
+                  "payload": {
+                    "id": {
+                      "$item": "id"
+                    }
+                  },
+                  "visible_when": ".running"
+                },
+                {
+                  "type": "button",
+                  "label": "Reset",
+                  "action": "reset",
+                  "payload": {
+                    "id": {
+                      "$item": "id"
+                    }
+                  }
+                },
+                {
+                  "type": "toggle",
+                  "label": "On screen",
+                  "bind": ".visible",
+                  "action": "set_visible",
+                  "payload": {
+                    "id": {
+                      "$item": "id"
+                    },
+                    "value": {
+                      "$value": true
+                    }
+                  }
+                },
+                {
+                  "type": "button",
+                  "label": "Delete",
+                  "action": "delete",
+                  "style": "destructive",
+                  "payload": {
+                    "id": {
+                      "$item": "id"
+                    }
+                  },
+                  "confirm": "Delete this timer?"
+                }
+              ]
+            }
+          },
+          {
+            "type": "button",
+            "label": "Add timer",
+            "action": "add"
+          }
+        ]
+      }
+    },
+    {
+      "id": "running",
+      "title": "Running timers",
+      "icon": "timer",
+      "placements": [
+        "playback",
+        "sidebar"
+      ],
+      "default_placement": "playback",
+      "layout": {
+        "type": "list",
+        "bind": "timers",
+        "empty_text": "No timers running",
+        "item": {
+          "type": "row",
+          "children": [
+            {
+              "type": "readout",
+              "bind": ".name"
+            },
+            {
+              "type": "readout",
+              "bind": ".countdown",
+              "format": "countdown",
+              "pattern": "mm:ss",
+              "style": "large"
+            },
+            {
+              "type": "button",
+              "label": "Pause",
+              "action": "pause",
+              "payload": {
+                "id": {
+                  "$item": "id"
+                }
+              },
+              "visible_when": ".running"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "inspectors": [
+    {
+      "id": "slide_timer",
+      "title": "Timer",
+      "applies_to": [
+        "slide"
+      ],
+      "schema_version": 1,
+      "layout": {
+        "type": "section",
+        "children": [
+          {
+            "type": "toggle",
+            "label": "Start a timer when this slide is taken",
+            "bind": "auto_start"
+          },
+          {
+            "type": "select",
+            "label": "Timer",
+            "bind": "timer_id",
+            "options_bind": "$state.timer_options",
+            "enabled_when": "auto_start"
+          },
+          {
+            "type": "toggle",
+            "label": "Show it on screen",
+            "bind": "show_fixture",
+            "enabled_when": "auto_start"
+          }
+        ]
+      }
+    },
+    {
+      "id": "timer_display",
+      "title": "Timer display",
+      "applies_to": [
+        "plugin_element"
+      ],
+      "element_types": [
+        "timer_display"
+      ],
+      "schema_version": 1,
+      "layout": {
+        "type": "section",
+        "children": [
+          {
+            "type": "select",
+            "label": "Timer",
+            "bind": "timer_id",
+            "options_bind": "$state.timer_options"
+          },
+          {
+            "type": "select",
+            "label": "Format",
+            "bind": "format",
+            "options": [
+              {
+                "value": "mm:ss",
+                "label": "12:34"
+              },
+              {
+                "value": "h:mm:ss",
+                "label": "1:12:34"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

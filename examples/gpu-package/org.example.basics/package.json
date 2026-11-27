@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "id": "org.example.basics",
+  "name": "Basics",
+  "version": "1.0.0",
+  "engine_api": 1,
+  "license": "MPL-2.0",
+  "description": "Example package: a glow effect, a luma-matte wipe, and an animated gradient source.",
+  "media": [
+    { "id": "diagonal", "file": "media/diagonal_matte.png", "kind": "image" }
+  ],
+  "effects": [
+    {
+      "id": "glow",
+      "name": "Glow",
+      "cost": "medium",
+      "expands_bounds": 48,
+      "passes": [
+        { "id": "blur_h", "file": "shaders/glow.slang", "entry": "blur_h", "scale": 0.5, "inputs": ["source"] },
+        { "id": "blur_v", "file": "shaders/glow.slang", "entry": "blur_v", "scale": 0.5, "inputs": ["pass:blur_h"] },
+        { "id": "combine", "file": "shaders/glow.slang", "entry": "combine", "inputs": ["source", "pass:blur_v"] }
+      ],
+      "params": [
+        { "id": "radius", "label": "Radius", "type": "number", "default": 16, "min": 0, "max": 64, "unit": "px" },
+        { "id": "intensity", "label": "Intensity", "type": "number", "default": 0.8, "min": 0, "max": 4 },
+        { "id": "tint", "label": "Tint", "type": "color", "default": [1, 0.9, 0.7, 1] }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "luma_wipe",
+      "name": "Diagonal wipe",
+      "default_duration_ms": 800,
+      "shader": { "file": "shaders/luma_wipe.slang", "entry": "luma_wipe" },
+      "textures": ["diagonal"],
+      "params": [
+        { "id": "softness", "label": "Softness", "type": "number", "default": 0.1, "min": 0, "max": 0.5 },
+        { "id": "invert", "label": "Reverse direction", "type": "boolean", "default": false }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "gradient",
+      "name": "Moving gradient",
+      "animated": true,
+      "shader": { "file": "shaders/gradient.slang", "entry": "gradient" },
+      "params": [
+        { "id": "color_a", "label": "Color A", "type": "color", "default": [0.05, 0.1, 0.3, 1] },
+        { "id": "color_b", "label": "Color B", "type": "color", "default": [0.4, 0.1, 0.5, 1] },
+        { "id": "speed", "label": "Speed", "type": "number", "default": 0.1, "min": 0, "max": 2 },
+        {
+          "id": "direction", "label": "Direction", "type": "choice", "default": "horizontal",
+          "choices": [ { "id": "horizontal", "label": "Horizontal" }, { "id": "vertical", "label": "Vertical" } ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,336 @@
+{
+  "canvas": [
+    1920,
+    1080
+  ],
+  "tolerance": 0.001,
+  "cases": [
+    {
+      "name": "flat at z=0 is unchanged",
+      "transform": {
+        "position": [
+          760,
+          340,
+          0
+        ],
+        "size": [
+          400,
+          400
+        ]
+      },
+      "perspective": null,
+      "expected": {
+        "corners": [
+          [
+            760.0,
+            340.0
+          ],
+          [
+            1160.0,
+            340.0
+          ],
+          [
+            1160.0,
+            740.0
+          ],
+          [
+            760.0,
+            740.0
+          ]
+        ],
+        "depth": 0.0,
+        "visible": true
+      }
+    },
+    {
+      "name": "z=+960 at default distance doubles in size",
+      "transform": {
+        "position": [
+          760,
+          340,
+          960
+        ],
+        "size": [
+          400,
+          400
+        ]
+      },
+      "perspective": null,
+      "expected": {
+        "corners": [
+          [
+            560.0,
+            140.0
+          ],
+          [
+            1360.0,
+            140.0
+          ],
+          [
+            1360.0,
+            940.0
+          ],
+          [
+            560.0,
+            940.0
+          ]
+        ],
+        "depth": 960.0,
+        "visible": true
+      }
+    },
+    {
+      "name": "z=-1920 halves in size",
+      "transform": {
+        "position": [
+          760,
+          340,
+          -1920
+        ],
+        "size": [
+          400,
+          400
+        ]
+      },
+      "perspective": null,
+      "expected": {
+        "corners": [
+          [
+            860.0,
+            440.0
+          ],
+          [
+            1060.0,
+            440.0
+          ],
+          [
+            1060.0,
+            640.0
+          ],
+          [
+            860.0,
+            640.0
+          ]
+        ],
+        "depth": -1920.0,
+        "visible": true
+      }
+    },
+    {
+      "name": "rotation_y 45: right edge recedes",
+      "transform": {
+        "position": [
+          760,
+          340,
+          0
+        ],
+        "size": [
+          400,
+          400
+        ],
+        "rotation_y_deg": 45
+      },
+      "perspective": null,
+      "expected": {
+        "corners": [
+          [
+            807.3337094607195,
+            324.09726140215827
+          ],
+          [
+            1091.719312577247,
+            353.7207617267965
+          ],
+          [
+            1091.719312577247,
+            726.2792382732034
+          ],
+          [
+            807.3337094607195,
+            755.9027385978418
+          ]
+        ],
+        "depth": 0.0,
+        "visible": true
+      }
+    },
+    {
+      "name": "rotation_x 30: top edge recedes",
+      "transform": {
+        "position": [
+          760,
+          340,
+          0
+        ],
+        "size": [
+          400,
+          400
+        ],
+        "rotation_x_deg": 30
+      },
+      "perspective": null,
+      "expected": {
+        "corners": [
+          [
+            769.90099009901,
+            375.36942819147305
+          ],
+          [
+            1150.09900990099,
+            375.36942819147305
+          ],
+          [
+            1170.989010989011,
+            722.7218434358376
+          ],
+          [
+            749.010989010989,
+            722.7218434358376
+          ]
+        ],
+        "depth": 0.0,
+        "visible": true
+      }
+    },
+    {
+      "name": "rotation 90 clockwise",
+      "transform": {
+        "position": [
+          760,
+          340,
+          0
+        ],
+        "size": [
+          400,
+          200
+        ],
+        "rotation_deg": 90
+      },
+      "perspective": null,
+      "expected": {
+        "corners": [
+          [
+            1060.0,
+            240.0
+          ],
+          [
+            1060.0,
+            640.0
+          ],
+          [
+            860.0,
+            640.0
+          ],
+          [
+            860.0,
+            240.0
+          ]
+        ],
+        "depth": 0.0,
+        "visible": true
+      }
+    },
+    {
+      "name": "off-center vanishing point",
+      "transform": {
+        "position": [
+          100,
+          100,
+          -500
+        ],
+        "size": [
+          400,
+          400
+        ]
+      },
+      "perspective": {
+        "distance": 1500,
+        "vanishing_point": [
+          0,
+          0
+        ]
+      },
+      "expected": {
+        "corners": [
+          [
+            75.0,
+            75.0
+          ],
+          [
+            375.0,
+            75.0
+          ],
+          [
+            375.0,
+            375.0
+          ],
+          [
+            75.0,
+            375.0
+          ]
+        ],
+        "depth": -500.0,
+        "visible": true
+      }
+    },
+    {
+      "name": "orthographic ignores depth scale",
+      "transform": {
+        "position": [
+          760,
+          340,
+          900
+        ],
+        "size": [
+          400,
+          400
+        ]
+      },
+      "perspective": {
+        "orthographic": true
+      },
+      "expected": {
+        "corners": [
+          [
+            760.0,
+            340.0
+          ],
+          [
+            1160.0,
+            340.0
+          ],
+          [
+            1160.0,
+            740.0
+          ],
+          [
+            760.0,
+            740.0
+          ]
+        ],
+        "depth": 900.0,
+        "visible": true
+      }
+    },
+    {
+      "name": "behind the camera is culled",
+      "transform": {
+        "position": [
+          760,
+          340,
+          2000
+        ],
+        "size": [
+          400,
+          400
+        ]
+      },
+      "perspective": null,
+      "expected": {
+        "corners": null,
+        "depth": 2000.0,
+        "visible": false
+      }
+    }
+  ]
+}

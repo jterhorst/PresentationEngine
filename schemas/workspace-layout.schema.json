@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/engine/schemas/workspace-layout.schema.json",
+  "title": "Workspace layout",
+  "description": "Which panels appear where in the main window. The app ships a default layout; operators adjust it; layout plugins may ship more. The app checks at load that each panel is allowed in its placement (core panels: see CONTRACTS.md; plugin panels: their 'placements'). Panels that don't exist (plugin not installed) are skipped and kept in the file.",
+  "type": "object",
+  "required": [
+    "schema",
+    "id",
+    "name",
+    "panes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string",
+      "description": "'core', 'user', or the plugin id that ships this layout."
+    },
+    "panes": {
+      "type": "object",
+      "required": [
+        "sidebar",
+        "main",
+        "drawer",
+        "playback",
+        "edit"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "toolbar": {
+          "$ref": "#/$defs/toolbar"
+        },
+        "sidebar": {
+          "$ref": "#/$defs/sidePane"
+        },
+        "main": {
+          "$ref": "#/$defs/mainPane"
+        },
+        "drawer": {
+          "$ref": "#/$defs/drawer"
+        },
+        "playback": {
+          "$ref": "#/$defs/sidePane"
+        },
+        "edit": {
+          "$ref": "#/$defs/editPane"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "panelRef": {
+      "type": "string",
+      "description": "'core.<name>' or 'plugin:<plugin_id>/<panel_id>'.",
+      "pattern": "^(core\\.[a-z][a-z0-9_]*|plugin:[a-z0-9]+(\\.[a-z0-9][a-z0-9-]*)+/[a-z][a-z0-9_]*)$"
+    },
+    "slot": {
+      "type": "object",
+      "required": [
+        "panel"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "panel": {
+          "$ref": "#/$defs/panelRef"
+        },
+        "collapsed": {
+          "type": "boolean",
+          "default": false
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Points; 0 or absent = fit content / share remaining space."
+        }
+      }
+    },
+    "sidePane": {
+      "type": "object",
+      "required": [
+        "panels"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "visible": {
+          "type": "boolean",
+          "default": true
+        },
+        "width": {
+          "type": "number",
+          "minimum": 160
+        },
+        "panels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slot"
+          }
+        }
+      }
+    },
+    "mainPane": {
+      "type": "object",
+      "required": [
+        "panels"
+      ],
+      "additionalProperties": false,
+      "description": "Show mode center pane, usually core.document_view (the selected playlist or document).",
+      "properties": {
+        "panels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/slot"
+          }
+        }
+      }
+    },
+    "drawer": {
+      "type": "object",
+      "required": [
+        "panels"
+      ],
+      "additionalProperties": false,
+      "description": "Plugin drawers at the bottom of the center pane (and of the edit area), listed in the toolbar's Plugins menu (core.drawer_toggle) in this order. One drawer is open at a time.",
+      "properties": {
+        "panels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/panelRef"
+          }
+        },
+        "open_panel": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/panelRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "height": {
+          "type": "number",
+          "minimum": 80
+        }
+      }
+    },
+    "toolbar": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "leading": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/panelRef"
+          }
+        },
+        "center": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/panelRef"
+          }
+        },
+        "trailing": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/panelRef"
+          }
+        }
+      }
+    },
+    "editPane": {
+      "type": "object",
+      "required": [
+        "panels"
+      ],
+      "additionalProperties": false,
+      "description": "Edit mode: replaces the sidebar and main panes with one area; playback stays visible. Panels lay out left to right (typically core.slide_navigator, core.slide_editor, core.inspector). Drawers remain available at its bottom.",
+      "properties": {
+        "panels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/editSlot"
+          }
+        }
+      }
+    },
+    "editSlot": {
+      "type": "object",
+      "required": [
+        "panel"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "panel": {
+          "$ref": "#/$defs/panelRef"
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Points; 0 or absent = take the remaining width."
+        },
+        "collapsed": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  }
+}

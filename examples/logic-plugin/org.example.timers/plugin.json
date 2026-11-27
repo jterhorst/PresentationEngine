@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "org.example.timers",
+  "name": "Timers",
+  "version": "1.0.0",
+  "engine_protocol": {
+    "major": 1,
+    "min_minor": 0
+  },
+  "license": "MPL-2.0",
+  "description": "Countdown timers the operator controls; each can show as an on-screen fixture.",
+  "run": {
+    "command": "bin/timers",
+    "platforms": [
+      "macos-arm64"
+    ]
+  },
+  "capabilities": [
+    "scene.fixtures",
+    "bindings",
+    "elements.render",
+    "document.extensions"
+  ],
+  "fixture_z_range": [
+    150,
+    199
+  ],
+  "ui": {
+    "schema": "ui.json"
+  },
+  "settings": {
+    "schema": "settings-ui.json",
+    "defaults": {
+      "overtime": true,
+      "format": "mm:ss"
+    }
+  },
+  "restart_policy": {
+    "max_restarts_per_minute": 3
+  },
+  "element_types": [
+    {
+      "type": "timer_display",
+      "name": "Timer display",
+      "schema_version": 1,
+      "default_content": {
+        "timer_id": "",
+        "format": "mm:ss"
+      },
+      "default_size": [
+        600,
+        200
+      ],
+      "inspector": "timer_display"
+    }
+  ],
+  "extensions": {
+    "applies_to": [
+      "slide"
+    ],
+    "schema_version": 1
+  }
+}

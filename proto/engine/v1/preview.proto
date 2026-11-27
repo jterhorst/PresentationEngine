@@ -1,0 +1,70 @@
+// Output previews and slide thumbnails.
+//
+// Local clients (capability "preview.iosurface") receive IOSurfaces: the surface
+// handle travels on the XPC side channel keyed by surface_id; PreviewFrame says
+// which pooled surface holds the newest frame. Remote clients
+// ("preview.h264") receive low-latency H.264 for WebCodecs or VideoToolbox.
+syntax = "proto3";
+
+package engine.v1;
+
+import "engine/v1/common.proto";
+
+option cc_enable_arenas = true;
+
+enum PreviewTransport {
+  PREVIEW_TRANSPORT_UNSPECIFIED = 0;
+  PREVIEW_TRANSPORT_IOSURFACE = 1;
+  PREVIEW_TRANSPORT_H264 = 2;
+}
+
+message PreviewSubscribe {
+  string output_id = 1;
+  Size max_size = 2;              // engine picks the nearest shared size bucket
+  uint32 max_fps = 3;
+  PreviewTransport transport = 4;
+}
+
+message PreviewUnsubscribe {
+  string output_id = 1;
+}
+
+message PreviewFrame {
+  string output_id = 1;
+  uint64 frame_number = 2;
+  int64 presented_at_ns = 3;
+  Size size = 4;
+  oneof payload {
+    LocalSurface surface = 10;
+    EncodedChunk h264 = 11;
+  }
+}
+
+message LocalSurface {
+  uint32 surface_id = 1;          // index into the pool shared over XPC
+  uint32 pool_generation = 2;     // bumps when the pool is recreated (size change)
+}
+
+message EncodedChunk {
+  bytes annexb = 1;               // one access unit
+  bool keyframe = 2;
+  bytes codec_config = 3;         // avcC; present on keyframes
+}
+
+// Rendered by the engine on a low-priority queue so it matches output exactly.
+message ThumbnailRequest {
+  string presentation_id = 1;
+  string slide_id = 2;
+  Size max_size = 3;
+}
+
+message Thumbnail {
+  string presentation_id = 1;
+  string slide_id = 2;
+  uint64 document_revision = 3;
+  Size size = 4;
+  oneof image {
+    bytes png = 10;
+    LocalSurface surface = 11;
+  }
+}

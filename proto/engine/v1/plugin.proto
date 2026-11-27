@@ -1,0 +1,346 @@
+// Plugins as seen over the protocol.
+//
+// Two audiences:
+// 1. UI clients: discover plugins, render their declarative UI, sync their
+//    state, and send actions (controller only).
+// 2. Logic plugin hosts (ClientKind PLUGIN_HOST, Role PLUGIN): subscribe to
+//    events, push scene edits and binding values, publish UI and state.
+//    Plugins push scenes, not frames: anything that changes per frame is a
+//    BindingValue the engine evaluates itself.
+syntax = "proto3";
+
+package engine.v1;
+
+import "engine/v1/common.proto";
+import "engine/v1/document.proto";
+import "engine/v1/state.proto";
+// DocumentSnapshot, Extension, PluginElement come from document.proto.
+
+option cc_enable_arenas = true;
+
+// ---------------------------------------------------------------------------
+// Catalog (engine -> UI)
+// ---------------------------------------------------------------------------
+
+enum PluginTier {
+  PLUGIN_TIER_UNSPECIFIED = 0;
+  PLUGIN_TIER_GPU_PACKAGE = 1;  // shaders + media, runs in the engine
+  PLUGIN_TIER_LOGIC = 2;        // separate process, speaks this protocol
+  PLUGIN_TIER_MODULE = 3;       // trusted native dylib (I/O)
+}
+
+enum ParamType {
+  PARAM_TYPE_UNSPECIFIED = 0;
+  PARAM_TYPE_NUMBER = 1;
+  PARAM_TYPE_INTEGER = 2;
+  PARAM_TYPE_BOOLEAN = 3;
+  PARAM_TYPE_COLOR = 4;
+  PARAM_TYPE_VEC2 = 5;
+  PARAM_TYPE_TEXT = 6;
+  PARAM_TYPE_MEDIA = 7;
+  PARAM_TYPE_CHOICE = 8;
+}
+
+message ParamDescriptor {
+  string id = 1;
+  string label = 2;
+  ParamType type = 3;
+  ParamValue default_value = 4;
+  double min = 5;
+  double max = 6;
+  repeated ChoiceOption choices = 7;
+}
+
+message ChoiceOption {
+  string id = 1;
+  string label = 2;
+}
+
+message CapabilityDescriptor {
+  string id = 1;                 // "effect", "transition", "source"
+  string item_id = 2;            // effect_id / transition_id / source_id
+  string name = 3;
+  repeated ParamDescriptor params = 4;
+  uint32 default_duration_ms = 5; // transitions only
+}
+
+message PluginInfo {
+  string id = 1;                 // reverse-DNS, e.g. "org.example.timers"
+  string name = 2;
+  string version = 3;
+  PluginTier tier = 4;
+  bool running = 5;
+  bool has_ui = 6;
+  repeated CapabilityDescriptor items = 7;
+  repeated string granted_capabilities = 8;
+}
+
+message PluginCatalog {
+  repeated PluginInfo plugins = 1;
+}
+
+// ---------------------------------------------------------------------------
+// UI contract (engine <-> UI; originates from the plugin)
+// ---------------------------------------------------------------------------
+
+// schema_json validates against schemas/ui-schema.schema.json.
+message PluginUi {
+  string plugin_id = 1;
+  uint32 schema_version = 2;
+  string schema_json = 3;
+}
+
+// Plugin state, mirrored to every client. Controls bind to paths in it.
+message PluginState {
+  string plugin_id = 1;
+  uint64 state_version = 2;      // strictly increasing per plugin
+  oneof change {
+    string snapshot_json = 3;    // full replacement
+    string json_patch = 4;       // RFC 6902 array, applies to state_version - 1
+  }
+}
+
+// UI (controller) -> engine -> plugin.
+message PluginAction {
+  string plugin_id = 1;
+  string action = 2;
+  string payload_json = 3;
+}
+
+// ---------------------------------------------------------------------------
+// Logic plugin role (plugin host <-> engine)
+// ---------------------------------------------------------------------------
+
+enum EventType {
+  EVENT_TYPE_UNSPECIFIED = 0;
+  EVENT_TYPE_SLIDE_TAKEN = 1;
+  EVENT_TYPE_LAYER_CLEARED = 2;
+  EVENT_TYPE_FIXTURE_SHOWN = 3;
+  EVENT_TYPE_FIXTURE_DISMISSED = 4;
+  EVENT_TYPE_BACKGROUND_CHANGED = 5;
+  EVENT_TYPE_DOCUMENT_LOADED = 6;
+  EVENT_TYPE_MEDIA_ENDED = 7;
+  EVENT_TYPE_TRANSITION_FINISHED = 8;
+  EVENT_TYPE_PLUGIN_TRIGGER = 9;   // a SlideAction aimed at this plugin
+  EVENT_TYPE_CONTROL_CHANGED = 10;
+}
+
+// Plugin -> engine.
+message PluginMessage {
+  oneof body {
+    PluginReady ready = 1;
+    PluginSubscribe subscribe = 2;
+    SceneEditBatch scene_edits = 3;
+    PluginUi publish_ui = 4;          // plugin_id is taken from the session
+    PluginState publish_state = 5;
+    BindingValues publish_bindings = 6;
+    PluginLog log = 7;
+    PluginElementsResolved resolved_elements = 8;  // capability "elements.render"
+    ExtensionProposal propose_extensions = 9;      // capability "document.extensions"
+  }
+}
+
+// Engine -> plugin.
+message EngineToPlugin {
+  oneof body {
+    PluginEvent event = 1;
+    PluginActionInvoked action = 2;
+    PluginSettingsChanged settings = 3;
+    PluginShutdown shutdown = 4;
+    DocumentSnapshot document = 5;                 // capability "document.read"
+    ResolvePluginElements resolve_elements = 6;    // capability "elements.render"
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Plugin element types
+// ---------------------------------------------------------------------------
+
+// Engine -> plugin, after every document load or patch, for this plugin's
+// PluginElements whose content changed. Never sent on the frame path.
+message ResolvePluginElements {
+  uint64 document_revision = 1;
+  repeated PluginElementRef elements = 2;
+}
+
+message PluginElementRef {
+  string element_id = 1;
+  string type = 2;
+  Extension content = 3;
+  Size box = 4;                   // element size in canvas units
+  string content_hash = 5;        // engine-computed; echo it back in the result
+}
+
+// Plugin -> engine. Also forwarded to UI clients so the controller can save
+// the result as the element's fallback.
+message PluginElementsResolved {
+  repeated ResolvedPluginElement results = 1;
+}
+
+message ResolvedPluginElement {
+  string element_id = 1;
+  string content_hash = 2;        // a stale hash is ignored
+  repeated Element elements = 3;  // core elements only; transforms relative to the box
+  Error error = 4;                // set instead of elements on failure; fallback stays
+}
+
+// ---------------------------------------------------------------------------
+// Extension data: plugins propose, the controller decides
+// ---------------------------------------------------------------------------
+
+// The document belongs to the controller, so plugins never write it directly.
+// The engine checks that every update touches only the proposing plugin's own
+// key, then forwards the proposal to the controller, which applies it with
+// PatchDocument (UIs normally auto-apply proposals for the owner's own key).
+message ExtensionProposal {
+  string plugin_id = 1;           // set by the engine from the session
+  uint64 base_revision = 2;
+  repeated ExtensionUpdate updates = 3;
+  string reason = 4;              // optional, shown in the UI's undo history
+}
+
+message ExtensionUpdate {
+  string entity_id = 1;           // any entity with an extensions map, or a PluginElement
+  oneof change {
+    Extension set = 2;            // replaces extensions[plugin_id]
+    bool remove = 3;
+    Extension set_plugin_element_content = 4; // PluginElement.content, own elements only
+  }
+}
+
+message PluginReady {}
+
+message PluginSubscribe {
+  repeated EventType events = 1;
+}
+
+message PluginEvent {
+  EventType type = 1;
+  int64 engine_time_ns = 2;
+  oneof detail {
+    SlideTaken slide_taken = 10;
+    LayerTarget layer_cleared = 11;
+    string fixture_id = 12;
+    LiveBackground background = 13;
+    uint64 document_revision = 14;
+    MediaEnded media_ended = 15;
+    TransitionFinished transition_finished = 16;
+    PluginTrigger trigger = 17;
+    ControlChanged control = 18;
+  }
+}
+
+message SlideTaken {
+  LiveSlide live = 1;
+  Slide slide = 2;                // content as rendered, incl. metadata
+}
+
+message ControlChanged {
+  string controller_display_name = 1;
+}
+
+message PluginActionInvoked {
+  string action = 1;
+  string payload_json = 2;
+  string from_session_id = 3;
+}
+
+message PluginSettingsChanged {
+  string values_json = 1;
+}
+
+message PluginShutdown {
+  uint32 grace_ms = 1;
+}
+
+// Applied atomically at one frame edge, or rejected as a whole.
+message SceneEditBatch {
+  repeated SceneEdit edits = 1;
+}
+
+message SceneEdit {
+  oneof edit {
+    InjectElements inject_elements = 1;
+    RemoveElements remove_elements = 2;
+    FixtureDef show_fixture = 3;     // id must be "plugin:<plugin_id>/..."
+    FixtureDef update_fixture = 4;   // replace content in place, no transition
+    string dismiss_fixture_id = 5;
+    SetPluginBackground set_background = 6;
+    PluginLayer add_layer = 7;
+    string remove_layer_id = 8;
+  }
+}
+
+enum InjectLifetime {
+  INJECT_LIFETIME_UNSPECIFIED = 0;     // UNTIL_SLIDE_CHANGES
+  INJECT_LIFETIME_UNTIL_SLIDE_CHANGES = 1;
+  INJECT_LIFETIME_UNTIL_REMOVED = 2;   // re-injected whenever slide_id is taken
+}
+
+// Requires capability "scene.inject".
+message InjectElements {
+  string slide_id = 1;            // "" = the live slide
+  repeated Element elements = 2;  // ids must be unique; prefixed by the engine
+  InjectLifetime lifetime = 3;
+  bool on_top = 4;                // above slide elements (default) or below
+}
+
+message RemoveElements {
+  repeated string element_ids = 1;
+}
+
+// Requires capability "scene.background".
+message SetPluginBackground {
+  Background background = 1;
+  optional TransitionSpec transition = 2;
+}
+
+// Requires capability "scene.layers".
+message PluginLayer {
+  string id = 1;
+  int32 z = 2;
+  repeated Element elements = 3;
+  repeated EffectInstance effects = 4;
+  optional Perspective perspective = 5;
+}
+
+// Values the engine evaluates every frame. A text binding
+// {plugin:<plugin_id>/<key>|<format>} reads values[<key>]. Requires capability "bindings".
+message BindingValues {
+  map<string, BindingValue> values = 1;
+}
+
+message BindingValue {
+  oneof value {
+    string text = 1;
+    double number = 2;
+    Countdown countdown = 3;
+    Stopwatch stopwatch = 4;
+  }
+}
+
+message Countdown {
+  int64 target_ns = 1;            // engine time the countdown reaches zero
+  bool running = 2;
+  int64 paused_remaining_ns = 3;  // shown while not running
+  bool allow_negative = 4;        // count up past zero ("overtime")
+}
+
+message Stopwatch {
+  int64 started_at_ns = 1;
+  bool running = 2;
+  int64 paused_elapsed_ns = 3;
+}
+
+enum LogLevel {
+  LOG_LEVEL_UNSPECIFIED = 0;
+  LOG_LEVEL_DEBUG = 1;
+  LOG_LEVEL_INFO = 2;
+  LOG_LEVEL_WARNING = 3;
+  LOG_LEVEL_ERROR = 4;
+}
+
+message PluginLog {
+  LogLevel level = 1;
+  string message = 2;
+}

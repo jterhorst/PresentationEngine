@@ -1,0 +1,82 @@
+// The UI's persistent library model: libraries of documents, and folders of
+// playlists. The engine never sees these directly; the controller builds a show
+// (engine.v1.Document) from the selected playlist and sends that.
+//
+// Shared by the native and web UIs so both read and write the same files.
+// Same extensibility rules as engine.v1 (CONTRACTS.md section 2): metadata = 50,
+// extensions = 51, 100-199 reserved, unknown fields round-tripped.
+//
+// On disk (one folder per library):
+//   <Library>/library.pb            Library (index)
+//   <Library>/documents/<id>.doc    DocumentFile
+//   <Library>/media/<sha256>.<ext>  media, named by content hash
+// Playlists live with the app's workspace:
+//   <Workspace>/playlists.pb        PlaylistFolder (root)
+syntax = "proto3";
+
+package library.v1;
+
+import "engine/v1/document.proto";
+
+option cc_enable_arenas = true;
+
+message Library {
+  string id = 1;
+  string name = 2;
+  uint32 model_version = 3;
+  repeated LibraryEntry documents = 4;
+  map<string, string> metadata = 50;
+  map<string, engine.v1.Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+// Index row for one document, so the left pane lists and searches a library
+// without opening every file.
+message LibraryEntry {
+  string document_id = 1;          // = DocumentFile.presentation.id
+  string name = 2;
+  string relative_path = 3;        // e.g. "documents/<id>.doc"
+  int64 modified_unix_ms = 4;
+  repeated string tags = 5;
+  uint32 slide_count = 6;
+  string search_text = 7;          // plain text of all slides, for search
+  map<string, string> metadata = 50;
+  map<string, engine.v1.Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+// One document: a presentation and the media it references.
+message DocumentFile {
+  uint32 model_version = 1;
+  engine.v1.Presentation presentation = 2;
+  repeated engine.v1.MediaRef media = 3;
+  reserved 100 to 199;
+}
+
+// Folders nest and hold playlists. Playlist items reference documents by id
+// (PlaylistItem.presentation_id), so one document can appear in many playlists.
+message PlaylistFolder {
+  string id = 1;
+  string name = 2;
+  repeated PlaylistFolder folders = 3;
+  repeated engine.v1.Playlist playlists = 4;
+  map<string, string> metadata = 50;
+  map<string, engine.v1.Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+// Which libraries the workspace has open, and its playlist tree.
+message Workspace {
+  uint32 model_version = 1;
+  repeated LibraryLocation libraries = 2;
+  PlaylistFolder playlists = 3;
+  string layout_id = 4;            // active workspace layout (workspace-layout.schema.json)
+  map<string, engine.v1.Extension> extensions = 51;
+  reserved 100 to 199;
+}
+
+message LibraryLocation {
+  string library_id = 1;
+  string path = 2;                 // folder path, or a URL for synced libraries later
+  bool read_only = 3;
+}

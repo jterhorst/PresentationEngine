@@ -1,0 +1,137 @@
+// Session lifecycle, roles, control handoff and heartbeat.
+syntax = "proto3";
+
+package engine.v1;
+
+import "engine/v1/common.proto";
+import "engine/v1/output.proto";
+
+option cc_enable_arenas = true;
+
+message ProtocolVersion {
+  uint32 major = 1; // incompatible changes; mismatch closes the connection
+  uint32 minor = 2; // additive changes; older clients ignore unknown fields
+}
+
+enum ClientKind {
+  CLIENT_KIND_UNSPECIFIED = 0;
+  CLIENT_KIND_UI = 1;           // native or web UI
+  CLIENT_KIND_PLUGIN_HOST = 2;  // runs one logic plugin (see plugin.proto)
+  CLIENT_KIND_TOOL = 3;         // CLI, test harness; observer unless granted control
+}
+
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_CONTROLLER = 1; // exactly one at a time; may send documents and commands
+  ROLE_OBSERVER = 2;   // receives document and state; may request control
+  ROLE_PLUGIN = 3;     // logic plugin host; scoped by its manifest capabilities
+}
+
+enum ControlSeatState {
+  CONTROL_SEAT_STATE_UNSPECIFIED = 0;
+  CONTROL_SEAT_STATE_OCCUPIED = 1;  // a controller is connected
+  CONTROL_SEAT_STATE_RESERVED = 2;  // controller dropped; held for its resume token
+  CONTROL_SEAT_STATE_VACANT = 3;    // first ControlRequest wins, no PIN
+}
+
+// First message on every connection, client -> engine.
+message Hello {
+  ProtocolVersion protocol = 1;
+  ClientKind kind = 2;
+  string client_name = 3;      // e.g. "Presenter for macOS"
+  string client_version = 4;
+  string display_name = 5;     // shown to operators, e.g. "Booth iPad"
+  bytes resume_token = 6;      // from a previous Welcome; restores role after reconnect
+  repeated string capabilities = 7; // see CONTRACTS.md "Capabilities"
+  string plugin_manifest_json = 8;  // required when kind = PLUGIN_HOST
+  bytes pairing_credential = 9;     // required for non-localhost connections
+}
+
+// Engine -> client, answers Hello.
+message Welcome {
+  ProtocolVersion protocol = 1;
+  string engine_version = 2;
+  string engine_instance_id = 3;  // changes on every engine start
+  string session_id = 4;
+  Role role = 5;
+  bytes resume_token = 6;         // keep it; send it in Hello after a reconnect
+  repeated string capabilities = 7; // intersection of client and engine capabilities
+  uint32 heartbeat_interval_ms = 8;
+  uint32 missed_heartbeats_before_disconnect = 9;
+  ControlSeat seat = 10;
+}
+
+message ControlSeat {
+  ControlSeatState state = 1;
+  string controller_session_id = 2;
+  string controller_display_name = 3;
+  int64 reserved_until_ns = 4; // when state = RESERVED
+}
+
+// Observer -> engine. If the seat is VACANT the role is granted immediately.
+// Otherwise the engine issues a PIN to the controller.
+message ControlRequest {
+  string display_name = 1;
+}
+
+// Engine -> controller only. Show the PIN and the requester's name to the operator.
+message ControlPinIssued {
+  string requester_session_id = 1;
+  string requester_display_name = 2;
+  string pin = 3;            // 6 digits, single use
+  int64 expires_at_ns = 4;
+}
+
+// Engine -> controller. The request was withdrawn, expired, or locked out.
+message ControlRequestEnded {
+  string requester_session_id = 1;
+  ErrorCode reason = 2;
+}
+
+// Requester -> engine.
+message ControlPinSubmit {
+  string pin = 1;
+}
+
+// Controller -> engine. Gives up control; the seat becomes VACANT.
+message ReleaseControl {}
+
+// Engine -> every client whenever roles or the seat change.
+message RoleChanged {
+  Role your_role = 1;
+  ControlSeat seat = 2;
+}
+
+message Goodbye {
+  string reason = 1;
+}
+
+// Engine -> every client at Welcome.heartbeat_interval_ms.
+message Heartbeat {
+  int64 engine_time_ns = 1;
+  uint64 state_revision = 2;     // compare with your last StateEvent; gap => request snapshot
+  uint64 document_revision = 3;
+  repeated OutputHealth outputs = 4;
+  repeated InputHealth inputs = 5;
+  repeated Playhead playheads = 6;
+  repeated PluginHealth plugins = 7;
+}
+
+// Interpolate locally: position_now = position_ns + (now - sampled_at_ns) * rate.
+message Playhead {
+  string element_id = 1;   // element playing the media (slide, fixture or background)
+  string media_id = 2;
+  int64 position_ns = 3;
+  int64 sampled_at_ns = 4; // engine time when position_ns was true
+  double rate = 5;         // 0 when paused
+  int64 duration_ns = 6;
+  bool looping = 7;
+}
+
+message PluginHealth {
+  string plugin_id = 1;
+  bool running = 2;
+  uint32 restarts = 3;
+  float gpu_ms_p99 = 4;    // GPU packages: worst effect instance cost
+  bool bypassed = 5;       // engine bypassed an effect that exceeded budget
+}

@@ -1,0 +1,196 @@
+// Output and input configuration, status and health.
+syntax = "proto3";
+
+package engine.v1;
+
+import "engine/v1/common.proto";
+
+option cc_enable_arenas = true;
+
+enum OutputKind {
+  OUTPUT_KIND_UNSPECIFIED = 0;
+  OUTPUT_KIND_SCREEN = 1;
+  OUTPUT_KIND_SDI = 2;
+  OUTPUT_KIND_NDI = 3;
+  OUTPUT_KIND_MODULE = 4; // any other output registered by a native module
+}
+
+enum PixelFormat {
+  PIXEL_FORMAT_UNSPECIFIED = 0; // engine picks the best format for the target
+  PIXEL_FORMAT_BGRA8 = 1;
+  PIXEL_FORMAT_UYVY8 = 2;
+  PIXEL_FORMAT_V210 = 3;        // 10-bit 4:2:2
+  PIXEL_FORMAT_RGBA16F = 4;
+}
+
+message VideoMode {
+  Size size = 1;
+  Rational frame_rate = 2;      // e.g. 60000/1001
+  bool interlaced = 3;
+}
+
+enum KeyMode {
+  KEY_MODE_UNSPECIFIED = 0;     // NONE
+  KEY_MODE_NONE = 1;
+  KEY_MODE_EXTERNAL = 2;        // fill + key on a connector pair
+  KEY_MODE_INTERNAL = 3;        // card keys over its own SDI input
+}
+
+enum FrameMissPolicy {
+  FRAME_MISS_POLICY_UNSPECIFIED = 0; // REPEAT_LAST
+  FRAME_MISS_POLICY_REPEAT_LAST = 1;
+  FRAME_MISS_POLICY_BLACK = 2;
+}
+
+enum GenlockState {
+  GENLOCK_STATE_UNSPECIFIED = 0;
+  GENLOCK_STATE_NOT_USED = 1;
+  GENLOCK_STATE_NO_REFERENCE = 2;
+  GENLOCK_STATE_LOCKING = 3;
+  GENLOCK_STATE_LOCKED = 4;
+}
+
+message OutputConfig {
+  string id = 1;
+  string name = 2;
+  OutputKind kind = 3;
+  bool enabled = 4;
+  oneof target {
+    ScreenTarget screen = 10;
+    SdiTarget sdi = 11;
+    NdiTarget ndi = 12;
+    ModuleTarget module = 13;
+  }
+  VideoMode mode = 20;
+  PixelFormat pixel_format = 21;
+  oneof content {
+    ProgramContent program = 30;
+    StageContent stage = 31;
+    InputPassthrough passthrough = 32;
+  }
+  AudioRouting audio = 40;
+  uint32 frames_in_flight = 41;   // 0 = engine default (2)
+  FrameMissPolicy miss_policy = 42;
+}
+
+message ScreenTarget {
+  string display_uuid = 1;        // stable across reboots and reconnects
+}
+
+message SdiTarget {
+  string device_id = 1;           // from the DeckLink module's device list
+  uint32 connector_index = 2;
+  KeyMode key_mode = 3;
+  bool genlock = 4;               // lock to the card's reference input
+}
+
+message NdiTarget {
+  string source_name = 1;
+  bool send_alpha = 2;
+}
+
+message ModuleTarget {
+  string module_id = 1;
+  string device_id = 2;
+  map<string, ParamValue> options = 3;
+}
+
+// Audience output: which layers it shows.
+message ProgramContent {
+  bool show_background = 1;
+  bool show_slide = 2;
+  bool show_fixtures = 3;
+  bool show_plugin_layers = 4;
+}
+
+message StageContent {
+  string stage_layout_id = 1;
+}
+
+// Full-frame input routed to the output, e.g. NDI in -> SDI out.
+message InputPassthrough {
+  string input_id = 1;
+  bool overlay_program = 2;       // draw program layers over the input
+}
+
+message AudioRouting {
+  bool enabled = 1;
+  uint32 channel_count = 2;       // 2, 8 or 16 for SDI
+  // source channel index -> output channel index; empty = identity
+  map<uint32, uint32> channel_map = 3;
+}
+
+enum InputKind {
+  INPUT_KIND_UNSPECIFIED = 0;
+  INPUT_KIND_NDI = 1;
+  INPUT_KIND_SDI = 2;
+  INPUT_KIND_MODULE = 3;
+}
+
+message InputConfig {
+  string id = 1;
+  string name = 2;
+  InputKind kind = 3;
+  oneof target {
+    NdiSource ndi = 10;
+    SdiTarget sdi = 11;
+    ModuleTarget module = 12;
+  }
+  bool capture_audio = 20;
+}
+
+message NdiSource {
+  string source_name = 1;
+  bool low_bandwidth = 2;
+}
+
+// Controller -> engine: replace the full I/O configuration.
+message IoConfigure {
+  repeated OutputConfig outputs = 1;
+  repeated InputConfig inputs = 2;
+}
+
+enum DeviceState {
+  DEVICE_STATE_UNSPECIFIED = 0;
+  DEVICE_STATE_STARTING = 1;
+  DEVICE_STATE_RUNNING = 2;
+  DEVICE_STATE_DEVICE_MISSING = 3;
+  DEVICE_STATE_ERROR = 4;
+  DEVICE_STATE_DISABLED = 5;
+}
+
+message OutputStatus {
+  string output_id = 1;
+  DeviceState state = 2;
+  string message = 3;
+  GenlockState genlock = 4;
+}
+
+message InputStatus {
+  string input_id = 1;
+  DeviceState state = 2;
+  string message = 3;
+  VideoMode detected_mode = 4;
+  bool has_audio = 5;
+}
+
+// Sent in every Heartbeat.
+message OutputHealth {
+  string output_id = 1;
+  double measured_fps = 2;
+  uint64 frames_rendered = 3;
+  uint64 frames_dropped = 4;
+  uint64 frames_repeated = 5;
+  uint32 buffer_depth = 6;
+  float gpu_ms_p50 = 7;
+  float gpu_ms_p99 = 8;
+  GenlockState genlock = 9;
+}
+
+message InputHealth {
+  string input_id = 1;
+  uint32 buffer_depth = 2;
+  uint64 frames_repeated = 3;     // rate/drift correction
+  uint64 frames_dropped = 4;
+  double audio_resample_ratio = 5; // adaptive resampler, 1.0 = no correction
+}

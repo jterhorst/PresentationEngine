@@ -1,0 +1,366 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/engine/schemas/logic-plugin.schema.json",
+  "title": "Logic plugin manifest (plugin.json)",
+  "description": "Tier 2 plugin: a separate process launched by the plugin host. It connects to the engine with ClientKind PLUGIN_HOST and sends this manifest in Hello.plugin_manifest_json. The engine enforces capabilities on every SceneEdit. A plugin may provide only importers, with no long-running process (no 'run').",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "version",
+    "engine_protocol"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9][a-z0-9-]*)+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$"
+    },
+    "engine_protocol": {
+      "type": "object",
+      "required": [
+        "major",
+        "min_minor"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "major": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "min_minor": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "license": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "command"
+      ],
+      "additionalProperties": false,
+      "description": "How the plugin host starts the plugin. The engine socket path is passed in ENGINE_PLUGIN_SOCKET.",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Executable path relative to the plugin folder."
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "macos-arm64",
+              "windows-x64",
+              "linux-x64",
+              "linux-arm64"
+            ]
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "scene.inject",
+          "scene.fixtures",
+          "scene.background",
+          "scene.layers",
+          "bindings",
+          "network",
+          "files.read",
+          "document.read",
+          "document.extensions",
+          "elements.render"
+        ]
+      },
+      "description": "scene.inject: InjectElements/RemoveElements. scene.fixtures: show/update/dismiss its own fixtures. scene.background: SetPluginBackground. scene.layers: add/remove plugin layers. bindings: publish BindingValues. network: allowed outbound connections. files.read: read files the operator picks. document.read: receive DocumentSnapshot. document.extensions: propose changes to its own extension data. elements.render: define element types and resolve PluginElements."
+    },
+    "fixture_z_range": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "Inclusive z range the plugin may use for fixtures and layers; the operator can override."
+    },
+    "ui": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "type": "string",
+          "description": "Initial UI schema file (ui-schema.schema.json). The plugin may republish at runtime."
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "type": "string",
+          "description": "Settings UI schema file (ui-schema.schema.json)."
+        },
+        "defaults": {
+          "type": "object"
+        }
+      }
+    },
+    "restart_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_restarts_per_minute": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 3
+        }
+      }
+    },
+    "element_types": {
+      "type": "array",
+      "description": "Element types this plugin defines. Requires capability elements.render. The UI offers them in its insert menu.",
+      "items": {
+        "type": "object",
+        "required": [
+          "type",
+          "name",
+          "schema_version"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "schema_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "default_content": {
+            "type": "object",
+            "description": "Initial PluginElement.content.data for a new element."
+          },
+          "default_size": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "Canvas units."
+          },
+          "inspector": {
+            "type": "string",
+            "description": "id of an inspector in the plugin's UI schema."
+          }
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Declares where the plugin stores extension data, so UIs can show which plugins a document depends on.",
+      "properties": {
+        "applies_to": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "document",
+              "playlist",
+              "playlist_item",
+              "presentation",
+              "slide",
+              "element",
+              "fixture",
+              "stage_layout",
+              "media"
+            ]
+          }
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "importers": {
+      "type": "array",
+      "description": "Import adapters (proto/import/v1/import.proto). Each is an executable started once per import, speaking framed protobuf over stdin/stdout. Listed in the UI's import format picker.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "command",
+          "file_types"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]*$"
+          },
+          "name": {
+            "type": "string",
+            "description": "Shown in the Open panel's Format menu, e.g. 'Word document'."
+          },
+          "command": {
+            "type": "string",
+            "description": "Executable relative to the plugin folder."
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "file_types": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "extensions"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "uttype": {
+                  "type": "string"
+                },
+                "extensions": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+$"
+                  }
+                },
+                "mime_types": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "options": {
+            "type": "string",
+            "description": "UI schema file (ui-schema.schema.json, top-level 'layout') rendered in the Open panel's accessory view."
+          },
+          "options_defaults": {
+            "type": "object"
+          },
+          "priority": {
+            "type": "integer",
+            "default": 0,
+            "description": "When several adapters accept a file in Automatic mode, the highest priority wins; first-party adapters use 0."
+          },
+          "requires": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "network",
+                "app.pages"
+              ]
+            },
+            "description": "Extra access the adapter needs. app.pages: may automate Pages to export. The UI asks the operator the first time."
+          },
+          "timeout_s": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 120
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "element_types"
+        ]
+      },
+      "then": {
+        "properties": {
+          "capabilities": {
+            "contains": {
+              "const": "elements.render"
+            }
+          }
+        },
+        "required": [
+          "capabilities"
+        ]
+      }
+    },
+    {
+      "anyOf": [
+        {
+          "required": [
+            "run"
+          ]
+        },
+        {
+          "required": [
+            "importers"
+          ]
+        }
+      ]
+    }
+  ]
+}

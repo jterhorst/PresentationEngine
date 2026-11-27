@@ -1,0 +1,26 @@
+// Engine and plugin settings, described by the same declarative UI schema
+// as plugin panels, so every client can render them natively.
+syntax = "proto3";
+
+package engine.v1;
+
+option cc_enable_arenas = true;
+
+// scope: "engine" or "plugin:<plugin_id>".
+message SettingsGet {
+  string scope = 1;
+}
+
+message SettingsValues {
+  string scope = 1;
+  uint64 version = 2;
+  string ui_schema_json = 3;      // validates against schemas/ui-schema.schema.json
+  string values_json = 4;         // controls bind to paths in this object
+}
+
+// Controller only. Fails with STALE_REVISION if base_version is not current.
+message SettingsSet {
+  string scope = 1;
+  uint64 base_version = 2;
+  string values_json = 3;         // full replacement for the scope
+}

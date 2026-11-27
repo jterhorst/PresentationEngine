@@ -1,0 +1,150 @@
+// Import adapters: stateless converters from outside formats (.docx, .pages,
+// .txt, ProPresenter .pro, ...) into library documents.
+//
+// An adapter is an executable the UI starts once per import. It speaks this
+// protocol over stdin/stdout: each message is a 4-byte big-endian length
+// followed by one serialized AdapterRequest (UI -> adapter) or AdapterResponse
+// (adapter -> UI). stderr is captured into the import log. Closing stdin or
+// killing the process cancels the import.
+//
+// Session:
+//   UI: describe            -> adapter: info
+//   UI: import_request      -> adapter: progress* then result | error
+//
+// Adapters never talk to the engine and never touch the library. They read the
+// one input file, write media into output_dir, and return documents. The UI
+// shows a review sheet and writes accepted documents into the chosen library.
+syntax = "proto3";
+
+package importer.v1;
+
+import "google/protobuf/struct.proto";
+import "engine/v1/common.proto";
+import "engine/v1/document.proto";
+
+option cc_enable_arenas = true;
+
+message AdapterRequest {
+  oneof body {
+    Describe describe = 1;
+    ImportRequest import_request = 2;
+  }
+}
+
+message AdapterResponse {
+  oneof body {
+    AdapterInfo info = 1;
+    ImportProgress progress = 2;
+    ImportResult result = 3;
+    AdapterError error = 4;
+  }
+}
+
+message Describe {
+  uint32 protocol_version = 1;  // 1
+}
+
+message AdapterInfo {
+  uint32 protocol_version = 1;
+  string adapter_id = 2;        // "<plugin_id>/<importer_id>", matches the manifest
+  string version = 3;
+  repeated FileType file_types = 4;
+  bool supports_multiple_documents = 5; // one file may yield several documents
+}
+
+message FileType {
+  string uttype = 1;            // e.g. "org.openxmlformats.wordprocessingml.document"
+  repeated string extensions = 2; // without dots, e.g. ["docx"]
+  repeated string mime_types = 3;
+}
+
+message ImportRequest {
+  string input_path = 1;        // read-only copy of the chosen file
+  string original_filename = 2;
+  string uttype = 3;            // as resolved by the UI
+  string output_dir = 4;        // empty, writable; put extracted media here
+  google.protobuf.Struct options = 5; // values from the adapter's options UI
+  engine.v1.Size canvas = 6;    // target library's canvas, for fully laid out slides
+  string locale = 7;            // BCP 47, for heuristics such as heading names
+}
+
+message ImportProgress {
+  float fraction = 1;           // 0..1, or negative if unknown
+  string message = 2;
+}
+
+message ImportResult {
+  repeated ImportedDocument documents = 1;
+  repeated ImportedMedia media = 2;
+  repeated ImportWarning warnings = 3;
+}
+
+message ImportedDocument {
+  string name = 1;              // suggested document name, e.g. song title
+  repeated ImportedSlide slides = 2;
+  map<string, string> metadata = 3;  // e.g. "ccli", "author", "copyright", "key"
+  map<string, engine.v1.Extension> extensions = 4; // keyed by the adapter's plugin id
+}
+
+// An adapter returns either semantic slides (text by role; the UI applies the
+// operator's chosen template) or fully laid out slides. Semantic is preferred
+// for text documents: the operator's template decides fonts and placement.
+message ImportedSlide {
+  oneof content {
+    SemanticSlide semantic = 1;
+    engine.v1.Slide laid_out = 2; // media references use ImportedMedia.local_id
+  }
+}
+
+message SemanticSlide {
+  string label = 1;             // e.g. "Verse 1", "Chorus"; empty if unknown
+  string group = 2;             // section this slide belongs to, e.g. "Chorus"
+  repeated TextBlock blocks = 3;
+  string notes = 4;
+  string media_local_id = 5;    // optional background or full-slide image
+}
+
+message TextBlock {
+  TextRole role = 1;
+  bytes rtf = 2;                // supported RTF subset (CONTRACTS.md); bold/italic etc. kept
+  string plain_text = 3;        // always set
+}
+
+enum TextRole {
+  TEXT_ROLE_UNSPECIFIED = 0;    // BODY
+  TEXT_ROLE_BODY = 1;
+  TEXT_ROLE_TITLE = 2;
+  TEXT_ROLE_SUBTITLE = 3;
+  TEXT_ROLE_FOOTER = 4;         // e.g. copyright / CCLI line
+}
+
+message ImportedMedia {
+  string local_id = 1;          // referenced from slides in this result
+  string relative_path = 2;     // inside output_dir
+  string mime_type = 3;
+}
+
+message ImportWarning {
+  enum Severity {
+    SEVERITY_UNSPECIFIED = 0;
+    SEVERITY_INFO = 1;          // e.g. "split 3 long paragraphs"
+    SEVERITY_WARNING = 2;       // e.g. "tables were flattened to text"
+  }
+  Severity severity = 1;
+  string message = 2;
+  string location = 3;          // human-readable, e.g. "page 2" or "paragraph 14"
+  int32 document_index = 4;     // -1 = whole file
+}
+
+message AdapterError {
+  enum Code {
+    CODE_UNSPECIFIED = 0;
+    CODE_UNSUPPORTED_FORMAT = 1; // not a file this adapter understands
+    CODE_CORRUPT_FILE = 2;
+    CODE_PASSWORD_PROTECTED = 3;
+    CODE_DEPENDENCY_MISSING = 4; // e.g. Pages export needs Pages installed
+    CODE_INTERNAL = 5;
+  }
+  Code code = 1;
+  string message = 2;           // shown to the operator
+}

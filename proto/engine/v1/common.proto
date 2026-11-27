@@ -1,0 +1,186 @@
+// Shared value types for the engine protocol.
+//
+// Conventions used across every file in engine.v1:
+// - IDs are opaque strings (UUIDs recommended), stable for the life of the entity.
+// - Times named *_ns are engine monotonic time in nanoseconds since engine start,
+//   unless the name says otherwise (e.g. duration_ns, position_ns).
+// - Geometry is in canvas units: pixels of the document's design canvas
+//   (Document.canvas), origin top-left, +y down. Outputs scale the canvas.
+// - Colors are sRGB-encoded with straight (non-premultiplied) alpha, 0..1.
+syntax = "proto3";
+
+package engine.v1;
+
+option cc_enable_arenas = true;
+
+message Rational {
+  int32 num = 1;
+  int32 den = 2;
+}
+
+message Size {
+  uint32 width = 1;
+  uint32 height = 2;
+}
+
+message Vec2 {
+  float x = 1;
+  float y = 2;
+}
+
+message Vec3 {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+// A vector path in a local coordinate space (for elements: canvas units
+// relative to the element box's top-left). Used for text containers, text
+// exclusions and path shapes.
+message Path {
+  repeated PathCommand commands = 1;
+  FillRule fill_rule = 2;
+}
+
+message PathCommand {
+  oneof command {
+    Vec2 move_to = 1;
+    Vec2 line_to = 2;
+    QuadTo quad_to = 3;
+    CubicTo cubic_to = 4;
+    Close close = 5;
+  }
+}
+
+message QuadTo {
+  Vec2 control = 1;
+  Vec2 to = 2;
+}
+
+message CubicTo {
+  Vec2 control1 = 1;
+  Vec2 control2 = 2;
+  Vec2 to = 3;
+}
+
+message Close {}
+
+enum FillRule {
+  FILL_RULE_UNSPECIFIED = 0; // NONZERO
+  FILL_RULE_NONZERO = 1;
+  FILL_RULE_EVEN_ODD = 2;
+}
+
+message Color {
+  float r = 1;
+  float g = 2;
+  float b = 3;
+  float a = 4;
+}
+
+// Placement of an element in its container's 3D space (projection math in
+// CONTRACTS.md, "Positions and 3D depth").
+message Transform {
+  // x, y: top-left of the element's box, canvas units.
+  // z: depth in canvas units. 0 = the base plane, where the element appears
+  // exactly as authored in 2D. Positive z comes toward the viewer (appears
+  // larger), negative recedes. Elements sort back to front by depth within
+  // their container; containers (slide, fixtures, plugin layers) still stack by
+  // their own layer z and never interleave.
+  Vec3 position = 1;
+  Vec2 size = 2;            // box size, canvas units
+  float rotation_deg = 3;   // around the view axis (Z), clockwise as seen on screen
+  Vec2 anchor = 4;          // pivot, 0..1 within the box; (0.5, 0.5) = center
+  Vec2 scale = 5;           // (1, 1) when unset is treated as identity
+  float rotation_x_deg = 6; // tilt around the horizontal axis; positive = top edge away
+  float rotation_y_deg = 7; // turn around the vertical axis; positive = right edge away
+}
+
+// The camera for a 3D container. Unset fields fall back to the document default,
+// then to the engine default (distance = canvas width, vanishing point = center).
+message Perspective {
+  float distance = 1;        // camera distance from the z = 0 plane, canvas units; 0 = default
+  Vec2 vanishing_point = 2;  // canvas units; unset = canvas center
+  bool orthographic = 3;     // no perspective: z only orders, x/y rotation foreshortens without convergence
+}
+
+enum BlendMode {
+  BLEND_MODE_UNSPECIFIED = 0; // treated as NORMAL
+  BLEND_MODE_NORMAL = 1;
+  BLEND_MODE_ADD = 2;
+  BLEND_MODE_MULTIPLY = 3;
+  BLEND_MODE_SCREEN = 4;
+  BLEND_MODE_OVERLAY = 5;
+  BLEND_MODE_DARKEN = 6;
+  BLEND_MODE_LIGHTEN = 7;
+  BLEND_MODE_SOFT_LIGHT = 8;
+  BLEND_MODE_DIFFERENCE = 9;
+}
+
+// Where a blend is computed. Linear is correct for crossfades and alpha;
+// gamma matches what designers expect from overlay / soft light in other tools.
+enum BlendSpace {
+  BLEND_SPACE_UNSPECIFIED = 0; // engine default: LINEAR
+  BLEND_SPACE_LINEAR = 1;
+  BLEND_SPACE_GAMMA = 2;
+}
+
+enum Easing {
+  EASING_UNSPECIFIED = 0; // LINEAR
+  EASING_LINEAR = 1;
+  EASING_EASE_IN = 2;
+  EASING_EASE_OUT = 3;
+  EASING_EASE_IN_OUT = 4;
+}
+
+// A value for an effect, transition, source or plugin parameter.
+// The parameter's declared type (in its package manifest) decides which arm is valid.
+message ParamValue {
+  oneof value {
+    double number = 1;
+    int64 integer = 2;
+    bool boolean = 3;
+    Color color = 4;
+    Vec2 vec2 = 5;
+    string text = 6;
+    string media_id = 7; // reference to Document.media
+    string choice = 8;   // one of a declared enum's option ids
+  }
+}
+
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  ERROR_CODE_NOT_CONTROLLER = 1;      // command needs the controller role
+  ERROR_CODE_UNKNOWN_ID = 2;          // referenced entity does not exist
+  ERROR_CODE_INVALID_ARGUMENT = 3;
+  ERROR_CODE_VERSION_MISMATCH = 4;    // protocol major mismatch; connection will close
+  ERROR_CODE_MEDIA_MISSING = 5;       // document references media the engine lacks
+  ERROR_CODE_STALE_REVISION = 6;      // patch base_revision is not current
+  ERROR_CODE_PIN_INVALID = 7;
+  ERROR_CODE_PIN_EXPIRED = 8;
+  ERROR_CODE_PIN_LOCKED_OUT = 9;      // too many attempts
+  ERROR_CODE_CAPABILITY_DENIED = 10;  // plugin acted outside its manifest capabilities
+  ERROR_CODE_UNSUPPORTED = 11;        // feature or capability not available
+  ERROR_CODE_BUSY = 12;
+  ERROR_CODE_NOT_PAIRED = 13;         // remote client lacks a valid pairing credential
+  ERROR_CODE_INTERNAL = 14;
+}
+
+message Error {
+  ErrorCode code = 1;
+  string message = 2;     // human-readable, safe to show an operator
+  string field_path = 3;  // optional: which field was wrong, e.g. "take_slide.slide_id"
+}
+
+// Generic success payload. Fields are set only where the request defines them.
+message Ok {
+  uint64 revision = 1; // e.g. new document revision after LoadDocument
+  string id = 2;       // e.g. upload_id after MediaUploadBegin
+}
+
+message Reply {
+  oneof result {
+    Ok ok = 1;
+    Error error = 2;
+  }
+}
