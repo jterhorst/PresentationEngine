@@ -12,6 +12,10 @@ Read `docs/architecture.md` for the plan and `CONTRACTS.md` for the rules before
 
 - All contract checks: `tests/run_all.sh` (needs `pip install grpcio-tools jsonschema slangpy` and clang).
 - Regenerate the 3D projection fixture, only on purpose: `python3 tests/reference/projection.py --write`.
+- Engine: `cmake -S . -B build -G Ninja -DPython3_EXECUTABLE=<python with slangpy> && cmake --build build && build/engine_tests`. Portable core only: add `-DENGINE_BUILD_METAL=OFF`.
+- Preview: `build/engined --preview scenes/*.scene.json`. Scenes are generated: edit `scenes/make_scenes.py`, then run it.
+- Goldens / counter baseline change only on purpose: `ENGINE_UPDATE_GOLDENS=1` / `ENGINE_UPDATE_BASELINE=1 build/engine_tests`, and say why in the PR.
+- `src/core` must not include Apple headers (the Linux CI job enforces it). Metal-specific code lives in `src/rhi_metal`, `src/text/coretext_*`, `src/media/*_apple*`, `src/engined/*.mm`.
 
 ## Rules
 

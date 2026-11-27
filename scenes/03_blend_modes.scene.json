@@ -1,0 +1,804 @@
+{
+ "name": "blend_modes",
+ "description": "The same orange disc in all nine blend modes over a hue/value backdrop. NORMAL and ADD use fixed-function blending; the rest read a backdrop copy.",
+ "document": {
+  "id": "blend-doc",
+  "media": [
+   {
+    "id": "spectrum",
+    "hintPath": "media/spectrum.jpg",
+    "kind": "MEDIA_KIND_IMAGE",
+    "naturalSize": {
+     "width": 1920,
+     "height": 1080
+    }
+   }
+  ],
+  "presentations": [
+   {
+    "id": "blend",
+    "name": "Blend modes",
+    "slides": [
+     {
+      "id": "grid",
+      "label": "Blend modes",
+      "background": {
+       "media": {
+        "mediaId": "spectrum",
+        "fit": "CONTENT_FIT_FILL"
+       }
+      },
+      "elements": [
+       {
+        "id": "disc-normal",
+        "transform": {
+         "position": {
+          "x": 330,
+          "y": 50,
+          "z": 0
+         },
+         "size": {
+          "x": 260,
+          "y": 260
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_ELLIPSE",
+         "fill": {
+          "r": 1.0,
+          "g": 0.55,
+          "b": 0.12,
+          "a": 1.0
+         }
+        },
+        "blendMode": "BLEND_MODE_NORMAL"
+       },
+       {
+        "id": "tag-normal",
+        "transform": {
+         "position": {
+          "x": 310,
+          "y": 318,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.6
+         },
+         "cornerRadius": 26
+        }
+       },
+       {
+        "id": "label-normal",
+        "transform": {
+         "position": {
+          "x": 310,
+          "y": 318,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Normal",
+           "style": {
+            "fontPostscriptName": "Menlo-Regular",
+            "sizePt": 26,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "disc-add",
+        "transform": {
+         "position": {
+          "x": 800,
+          "y": 50,
+          "z": 0
+         },
+         "size": {
+          "x": 260,
+          "y": 260
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_ELLIPSE",
+         "fill": {
+          "r": 1.0,
+          "g": 0.55,
+          "b": 0.12,
+          "a": 1.0
+         }
+        },
+        "blendMode": "BLEND_MODE_ADD"
+       },
+       {
+        "id": "tag-add",
+        "transform": {
+         "position": {
+          "x": 780,
+          "y": 318,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.6
+         },
+         "cornerRadius": 26
+        }
+       },
+       {
+        "id": "label-add",
+        "transform": {
+         "position": {
+          "x": 780,
+          "y": 318,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Add",
+           "style": {
+            "fontPostscriptName": "Menlo-Regular",
+            "sizePt": 26,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "disc-multiply",
+        "transform": {
+         "position": {
+          "x": 1270,
+          "y": 50,
+          "z": 0
+         },
+         "size": {
+          "x": 260,
+          "y": 260
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_ELLIPSE",
+         "fill": {
+          "r": 1.0,
+          "g": 0.55,
+          "b": 0.12,
+          "a": 1.0
+         }
+        },
+        "blendMode": "BLEND_MODE_MULTIPLY"
+       },
+       {
+        "id": "tag-multiply",
+        "transform": {
+         "position": {
+          "x": 1250,
+          "y": 318,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.6
+         },
+         "cornerRadius": 26
+        }
+       },
+       {
+        "id": "label-multiply",
+        "transform": {
+         "position": {
+          "x": 1250,
+          "y": 318,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Multiply",
+           "style": {
+            "fontPostscriptName": "Menlo-Regular",
+            "sizePt": 26,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "disc-screen",
+        "transform": {
+         "position": {
+          "x": 330,
+          "y": 395,
+          "z": 0
+         },
+         "size": {
+          "x": 260,
+          "y": 260
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_ELLIPSE",
+         "fill": {
+          "r": 1.0,
+          "g": 0.55,
+          "b": 0.12,
+          "a": 1.0
+         }
+        },
+        "blendMode": "BLEND_MODE_SCREEN"
+       },
+       {
+        "id": "tag-screen",
+        "transform": {
+         "position": {
+          "x": 310,
+          "y": 663,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.6
+         },
+         "cornerRadius": 26
+        }
+       },
+       {
+        "id": "label-screen",
+        "transform": {
+         "position": {
+          "x": 310,
+          "y": 663,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Screen",
+           "style": {
+            "fontPostscriptName": "Menlo-Regular",
+            "sizePt": 26,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "disc-overlay",
+        "transform": {
+         "position": {
+          "x": 800,
+          "y": 395,
+          "z": 0
+         },
+         "size": {
+          "x": 260,
+          "y": 260
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_ELLIPSE",
+         "fill": {
+          "r": 1.0,
+          "g": 0.55,
+          "b": 0.12,
+          "a": 1.0
+         }
+        },
+        "blendMode": "BLEND_MODE_OVERLAY"
+       },
+       {
+        "id": "tag-overlay",
+        "transform": {
+         "position": {
+          "x": 780,
+          "y": 663,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.6
+         },
+         "cornerRadius": 26
+        }
+       },
+       {
+        "id": "label-overlay",
+        "transform": {
+         "position": {
+          "x": 780,
+          "y": 663,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Overlay",
+           "style": {
+            "fontPostscriptName": "Menlo-Regular",
+            "sizePt": 26,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "disc-darken",
+        "transform": {
+         "position": {
+          "x": 1270,
+          "y": 395,
+          "z": 0
+         },
+         "size": {
+          "x": 260,
+          "y": 260
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_ELLIPSE",
+         "fill": {
+          "r": 1.0,
+          "g": 0.55,
+          "b": 0.12,
+          "a": 1.0
+         }
+        },
+        "blendMode": "BLEND_MODE_DARKEN"
+       },
+       {
+        "id": "tag-darken",
+        "transform": {
+         "position": {
+          "x": 1250,
+          "y": 663,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.6
+         },
+         "cornerRadius": 26
+        }
+       },
+       {
+        "id": "label-darken",
+        "transform": {
+         "position": {
+          "x": 1250,
+          "y": 663,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Darken",
+           "style": {
+            "fontPostscriptName": "Menlo-Regular",
+            "sizePt": 26,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "disc-lighten",
+        "transform": {
+         "position": {
+          "x": 330,
+          "y": 740,
+          "z": 0
+         },
+         "size": {
+          "x": 260,
+          "y": 260
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_ELLIPSE",
+         "fill": {
+          "r": 1.0,
+          "g": 0.55,
+          "b": 0.12,
+          "a": 1.0
+         }
+        },
+        "blendMode": "BLEND_MODE_LIGHTEN"
+       },
+       {
+        "id": "tag-lighten",
+        "transform": {
+         "position": {
+          "x": 310,
+          "y": 1008,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.6
+         },
+         "cornerRadius": 26
+        }
+       },
+       {
+        "id": "label-lighten",
+        "transform": {
+         "position": {
+          "x": 310,
+          "y": 1008,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Lighten",
+           "style": {
+            "fontPostscriptName": "Menlo-Regular",
+            "sizePt": 26,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "disc-soft_light",
+        "transform": {
+         "position": {
+          "x": 800,
+          "y": 740,
+          "z": 0
+         },
+         "size": {
+          "x": 260,
+          "y": 260
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_ELLIPSE",
+         "fill": {
+          "r": 1.0,
+          "g": 0.55,
+          "b": 0.12,
+          "a": 1.0
+         }
+        },
+        "blendMode": "BLEND_MODE_SOFT_LIGHT"
+       },
+       {
+        "id": "tag-soft_light",
+        "transform": {
+         "position": {
+          "x": 780,
+          "y": 1008,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.6
+         },
+         "cornerRadius": 26
+        }
+       },
+       {
+        "id": "label-soft_light",
+        "transform": {
+         "position": {
+          "x": 780,
+          "y": 1008,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Soft Light",
+           "style": {
+            "fontPostscriptName": "Menlo-Regular",
+            "sizePt": 26,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "disc-difference",
+        "transform": {
+         "position": {
+          "x": 1270,
+          "y": 740,
+          "z": 0
+         },
+         "size": {
+          "x": 260,
+          "y": 260
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_ELLIPSE",
+         "fill": {
+          "r": 1.0,
+          "g": 0.55,
+          "b": 0.12,
+          "a": 1.0
+         }
+        },
+        "blendMode": "BLEND_MODE_DIFFERENCE"
+       },
+       {
+        "id": "tag-difference",
+        "transform": {
+         "position": {
+          "x": 1250,
+          "y": 1008,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0,
+          "g": 0,
+          "b": 0,
+          "a": 0.6
+         },
+         "cornerRadius": 26
+        }
+       },
+       {
+        "id": "label-difference",
+        "transform": {
+         "position": {
+          "x": 1250,
+          "y": 1008,
+          "z": 0
+         },
+         "size": {
+          "x": 300,
+          "y": 52
+         }
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Difference",
+           "style": {
+            "fontPostscriptName": "Menlo-Regular",
+            "sizePt": 26,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "canvas": {
+   "width": 1920,
+   "height": 1080
+  },
+  "modelVersion": 1
+ },
+ "output": {
+  "width": 1920,
+  "height": 1080,
+  "rate": {
+   "num": 60000,
+   "den": 1001
+  }
+ },
+ "script": [
+  {
+   "atMs": 0,
+   "command": {
+    "takeSlide": {
+     "presentationId": "blend",
+     "slideId": "grid"
+    }
+   }
+  }
+ ],
+ "goldenAtMs": [
+  100
+ ],
+ "durationMs": 2000
+}

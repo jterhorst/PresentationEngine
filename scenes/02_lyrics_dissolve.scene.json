@@ -1,0 +1,239 @@
+{
+ "name": "lyrics_dissolve",
+ "description": "Three lyric slides, 1 s ease-in-out dissolves (both sides offscreen, then a crossfade), a credit fixture at z 150 shown by a slide action.",
+ "document": {
+  "id": "lyrics-doc",
+  "fixtures": [
+   {
+    "id": "credit",
+    "name": "Song credit",
+    "z": 150,
+    "elements": [
+     {
+      "id": "bar",
+      "transform": {
+       "position": {
+        "x": 0,
+        "y": 990,
+        "z": 0
+       },
+       "size": {
+        "x": 1920,
+        "y": 90
+       }
+      },
+      "shape": {
+       "kind": "SHAPE_KIND_RECTANGLE",
+       "fill": {
+        "r": 0,
+        "g": 0,
+        "b": 0,
+        "a": 0.45
+       }
+      }
+     },
+     {
+      "id": "credit-text",
+      "transform": {
+       "position": {
+        "x": 60,
+        "y": 990,
+        "z": 0
+       },
+       "size": {
+        "x": 1800,
+        "y": 90
+       }
+      },
+      "text": {
+       "runs": [
+        {
+         "text": "Amazing Grace",
+         "style": {
+          "fontPostscriptName": "AvenirNext-DemiBold",
+          "sizePt": 30,
+          "fill": {
+           "r": 1,
+           "g": 0.8,
+           "b": 0.45,
+           "a": 1
+          }
+         }
+        },
+        {
+         "text": "   John Newton, 1779  ·  public domain",
+         "style": {
+          "fontPostscriptName": "AvenirNext-Regular",
+          "sizePt": 30,
+          "fill": {
+           "r": 1,
+           "g": 1,
+           "b": 1,
+           "a": 0.8
+          }
+         }
+        }
+       ],
+       "paragraph": {
+        "align": "TEXT_ALIGN_LEFT"
+       }
+      }
+     }
+    ]
+   }
+  ],
+  "presentations": [
+   {
+    "id": "amazing-grace",
+    "name": "Amazing Grace",
+    "slides": [
+     {
+      "id": "s0",
+      "label": "Verse 1",
+      "elements": [
+       {
+        "id": "lyrics",
+        "transform": {
+         "position": {
+          "x": 120,
+          "y": 240,
+          "z": 0
+         },
+         "size": {
+          "x": 1680,
+          "y": 600
+         }
+        },
+        "text": {
+         "rtf": "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyODIye1xmb250dGJsXGYwXGZuaWwgQXZlbmlyTmV4dC1EZW1pQm9sZDt9e1xjb2xvcnRibDtccmVkMjU1XGdyZWVuMjU1XGJsdWUyNTU7fVxwYXJkXHFjXHNsLTE1MDBcc2xtdWx0MCB7XGYwXGZzMTIwXGNmMSBBbWF6aW5nIGdyYWNlISBIb3cgc3dlZXQgdGhlIHNvdW5kXGxpbmUgVGhhdCBzYXZlZCBhIHdyZXRjaCBsaWtlIG1lIX19",
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       }
+      ],
+      "background": {
+       "color": {
+        "r": 0.050980392156862744,
+        "g": 0.10588235294117647,
+        "b": 0.16470588235294117,
+        "a": 1.0
+       }
+      },
+      "actions": [
+       {
+        "showFixtureId": "credit"
+       }
+      ]
+     },
+     {
+      "id": "s1",
+      "label": "Verse 1 (2)",
+      "elements": [
+       {
+        "id": "lyrics",
+        "transform": {
+         "position": {
+          "x": 120,
+          "y": 240,
+          "z": 0
+         },
+         "size": {
+          "x": 1680,
+          "y": 600
+         }
+        },
+        "text": {
+         "rtf": "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyODIye1xmb250dGJsXGYwXGZuaWwgQXZlbmlyTmV4dC1EZW1pQm9sZDt9e1xjb2xvcnRibDtccmVkMjU1XGdyZWVuMjU1XGJsdWUyNTU7fVxwYXJkXHFjXHNsLTE1MDBcc2xtdWx0MCB7XGYwXGZzMTIwXGNmMSBJIG9uY2Ugd2FzIGxvc3QsIGJ1dCBub3cgYW0gZm91bmQ7XGxpbmUgV2FzIGJsaW5kLCBidXQgbm93IEkgc2VlLn19",
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       }
+      ]
+     },
+     {
+      "id": "s2",
+      "label": "Verse 2",
+      "elements": [
+       {
+        "id": "lyrics",
+        "transform": {
+         "position": {
+          "x": 120,
+          "y": 240,
+          "z": 0
+         },
+         "size": {
+          "x": 1680,
+          "y": 600
+         }
+        },
+        "text": {
+         "rtf": "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyODIye1xmb250dGJsXGYwXGZuaWwgQXZlbmlyTmV4dC1EZW1pQm9sZDt9e1xjb2xvcnRibDtccmVkMjU1XGdyZWVuMjU1XGJsdWUyNTU7fVxwYXJkXHFjXHNsLTE1MDBcc2xtdWx0MCB7XGYwXGZzMTIwXGNmMSBcdTgyMTc/VHdhcyBncmFjZSB0aGF0IHRhdWdodCBteSBoZWFydCB0byBmZWFyLFxsaW5lIEFuZCBncmFjZSBteSBmZWFycyByZWxpZXZlZDt9fQ==",
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       }
+      ]
+     }
+    ],
+    "defaultTransition": {
+     "packageId": "core",
+     "transitionId": "dissolve",
+     "durationMs": 1000,
+     "easing": "EASING_EASE_IN_OUT"
+    }
+   }
+  ],
+  "canvas": {
+   "width": 1920,
+   "height": 1080
+  },
+  "modelVersion": 1
+ },
+ "output": {
+  "width": 1920,
+  "height": 1080,
+  "rate": {
+   "num": 60000,
+   "den": 1001
+  }
+ },
+ "script": [
+  {
+   "atMs": 0,
+   "command": {
+    "takeSlide": {
+     "presentationId": "amazing-grace",
+     "slideId": "s0"
+    }
+   }
+  },
+  {
+   "atMs": 2000,
+   "command": {
+    "takeSlide": {
+     "presentationId": "amazing-grace",
+     "slideId": "s1"
+    }
+   }
+  },
+  {
+   "atMs": 4000,
+   "command": {
+    "takeSlide": {
+     "presentationId": "amazing-grace",
+     "slideId": "s2"
+    }
+   }
+  }
+ ],
+ "goldenAtMs": [
+  1200,
+  2500,
+  5200
+ ],
+ "durationMs": 6000
+}
