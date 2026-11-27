@@ -18,7 +18,7 @@ jobs:
           cmake -S . -B build -G Ninja -DENGINE_BUILD_METAL=OFF -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang
           cmake --build build
       - name: Test
-        run: build/engine_tests
+        run: build/engine_tests && (cd build && ctest -R smoke --output-on-failure)
 
   # Metal targets on a hosted macOS runner. Hosted runners are VMs: build,
   # run the CPU and shader tests and the deterministic counter gate, but skip
@@ -41,4 +41,4 @@ jobs:
       - name: Test (counters gate; goldens run on dedicated Apple silicon)
         env:
           ENGINE_SKIP_GOLDENS: "1"
-        run: build/engine_tests
+        run: build/engine_tests && (cd build && ctest -R smoke --output-on-failure)

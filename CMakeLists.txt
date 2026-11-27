@@ -16,7 +16,8 @@ endif()
 option(ENGINE_BUILD_METAL "Build the Metal backend, text/media seams and engined" ${APPLE})
 option(ENGINE_BUILD_TESTS "Build engine_tests" ON)
 
-add_compile_options(-Wall -Wextra -Wno-unused-parameter)
+add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers)
+find_package(Threads REQUIRED)
 
 find_package(Protobuf CONFIG QUIET)
 if(NOT Protobuf_FOUND)
@@ -109,4 +110,31 @@ if(ENGINE_BUILD_TESTS)
   endif()
   include(GoogleTest)
   gtest_discover_tests(engine_tests DISCOVERY_TIMEOUT 60)
+endif()
+
+# ---- Modules: DeckLink (separately distributed; never links engine code) ----
+add_library(decklink_core STATIC modules/decklink/module.cpp)
+target_include_directories(decklink_core PUBLIC ${CMAKE_SOURCE_DIR}/modules/decklink ${CMAKE_SOURCE_DIR}/include)
+set_target_properties(decklink_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+add_library(fake_decklink STATIC modules/decklink/fake/fake_decklink.cpp)
+target_link_libraries(fake_decklink PUBLIC decklink_core Threads::Threads)
+set_target_properties(fake_decklink PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+add_library(decklink MODULE modules/decklink/entry_sdk.cpp)
+target_link_libraries(decklink PRIVATE decklink_core)
+add_library(decklink_fake MODULE modules/decklink/entry_fake.cpp)
+target_link_libraries(decklink_fake PRIVATE fake_decklink)
+foreach(m decklink decklink_fake)
+  set_target_properties(${m} PROPERTIES PREFIX "" CXX_VISIBILITY_PRESET hidden)
+endforeach()
+
+if(ENGINE_BUILD_TESTS)
+  target_sources(engine_tests PRIVATE tests/engine/decklink_test.cpp)
+  target_link_libraries(engine_tests PRIVATE fake_decklink)
+  # The C smoke host from the contract checks, loading the module the way the engine will.
+  add_executable(module_host_smoke tests/module_host_smoke.c)
+  target_include_directories(module_host_smoke PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_link_libraries(module_host_smoke PRIVATE ${CMAKE_DL_LIBS} Threads::Threads)
+  add_test(NAME decklink_fake_module_smoke COMMAND module_host_smoke $<TARGET_FILE:decklink_fake>)
 endif()
