@@ -48,8 +48,9 @@ function(engine_slang_to_msl out_var)
     list(APPEND entries ${entry})
   endforeach()
   set(cpp ${gen_dir}/shaders_msl.cpp)
+  string(REPLACE ";" "," entry_csv "${entries}")
   add_custom_command(OUTPUT ${cpp}
-    COMMAND ${CMAKE_COMMAND} -DOUT=${cpp} -DDIR=${gen_dir} "-DENTRIES=${entries}"
+    COMMAND ${CMAKE_COMMAND} -DOUT=${cpp} -DDIR=${gen_dir} -DENTRIES=${entry_csv}
             -P ${CMAKE_SOURCE_DIR}/cmake/EmbedMsl.cmake
     DEPENDS ${metal_files} ${CMAKE_SOURCE_DIR}/cmake/EmbedMsl.cmake
     COMMENT "Embedding MSL")

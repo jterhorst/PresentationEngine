@@ -1,0 +1,44 @@
+name: engine
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # Portable core on Linux: no Apple headers allowed in engine_core.
+  core-linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build clang libprotobuf-dev protobuf-compiler libgtest-dev
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DENGINE_BUILD_METAL=OFF -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang
+          cmake --build build
+      - name: Test
+        run: build/engine_tests
+
+  # Metal targets on a hosted macOS runner. Hosted runners are VMs: build,
+  # run the CPU and shader tests and the deterministic counter gate, but skip
+  # golden images and never gate on timing.
+  metal-macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tools
+        run: |
+          brew install ninja protobuf googletest
+          pip install slangpy
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPython3_EXECUTABLE=$(which python)
+          cmake --build build
+      - name: Test (counters gate; goldens run on dedicated Apple silicon)
+        env:
+          ENGINE_SKIP_GOLDENS: "1"
+        run: build/engine_tests

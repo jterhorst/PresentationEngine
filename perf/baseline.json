@@ -1,0 +1,7 @@
+{
+  "01_title": {"allocations": 0, "backdrop_copies": 0, "bytes_uploaded": 0, "draws": 720, "driver_allocations": 180, "frames": 180, "lock_waits": 0, "offscreen_textures": 0, "render_passes": 180, "shaders_compiled": 0},
+  "02_lyrics_dissolve": {"allocations": 0, "backdrop_copies": 0, "bytes_uploaded": 0, "draws": 1740, "driver_allocations": 720, "frames": 360, "lock_waits": 0, "offscreen_textures": 360, "render_passes": 720, "shaders_compiled": 0},
+  "03_blend_modes": {"allocations": 0, "backdrop_copies": 840, "bytes_uploaded": 0, "draws": 3360, "driver_allocations": 16920, "frames": 120, "lock_waits": 0, "offscreen_textures": 0, "render_passes": 960, "shaders_compiled": 0},
+  "04_depth_3d": {"allocations": 0, "backdrop_copies": 0, "bytes_uploaded": 0, "draws": 1560, "driver_allocations": 120, "frames": 120, "lock_waits": 0, "offscreen_textures": 0, "render_passes": 120, "shaders_compiled": 0},
+  "05_text_layout": {"allocations": 0, "backdrop_copies": 0, "bytes_uploaded": 0, "draws": 960, "driver_allocations": 120, "frames": 120, "lock_waits": 0, "offscreen_textures": 0, "render_passes": 120, "shaders_compiled": 0}
+}

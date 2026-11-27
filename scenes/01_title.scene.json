@@ -1,0 +1,168 @@
+{
+ "name": "title",
+ "description": "Image background (FILL), RTF title with tracking and exact line spacing, a rounded lower third with stroke and soft shadow.",
+ "document": {
+  "id": "title-doc",
+  "media": [
+   {
+    "id": "dusk",
+    "hintPath": "media/dusk.jpg",
+    "kind": "MEDIA_KIND_IMAGE",
+    "naturalSize": {
+     "width": 1920,
+     "height": 1080
+    }
+   }
+  ],
+  "presentations": [
+   {
+    "id": "welcome",
+    "name": "Welcome",
+    "slides": [
+     {
+      "id": "title",
+      "label": "Title",
+      "background": {
+       "media": {
+        "mediaId": "dusk",
+        "fit": "CONTENT_FIT_FILL"
+       }
+      },
+      "elements": [
+       {
+        "id": "headline",
+        "transform": {
+         "position": {
+          "x": 160,
+          "y": 250,
+          "z": 0
+         },
+         "size": {
+          "x": 1600,
+          "y": 420
+         }
+        },
+        "text": {
+         "rtf": "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyODIye1xmb250dGJsXGYwXGZuaWwgQXZlbmlyTmV4dC1EZW1pQm9sZDtcZjFcZm5pbCBBdmVuaXJOZXh0LUhlYXZ5O317XGNvbG9ydGJsO1xyZWQyNTVcZ3JlZW4yMTlcYmx1ZTE4MztccmVkMjU1XGdyZWVuMjU1XGJsdWUyNTU7XHJlZDI1NVxncmVlbjE4M1xibHVlMTE0O31ccGFyZFxxYyB7XGYwXGZzNTJcZXhwbmQxMlxjZjEgV0VMQ09NRSBUT31ccGFyClxwYXJkXHFjXHNsLTE5MDBcc2xtdWx0MCB7XGYxXGZzMTkyXGNmMiBTdW5kYXkgfXtcZjFcZnMxOTJcY2YzIEdhdGhlcmluZ319",
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "lower-third",
+        "transform": {
+         "position": {
+          "x": 460,
+          "y": 800,
+          "z": 0
+         },
+         "size": {
+          "x": 1000,
+          "y": 120
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0.06274509803921569,
+          "g": 0.0784313725490196,
+          "b": 0.1568627450980392,
+          "a": 0.78
+         },
+         "stroke": {
+          "color": {
+           "r": 1,
+           "g": 1,
+           "b": 1,
+           "a": 0.35
+          },
+          "width": 2
+         },
+         "cornerRadius": 60,
+         "shadows": [
+          {
+           "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.55
+           },
+           "offset": {
+            "x": 0,
+            "y": 14
+           },
+           "blurRadius": 36
+          }
+         ]
+        }
+       },
+       {
+        "id": "time",
+        "transform": {
+         "position": {
+          "x": 460,
+          "y": 800,
+          "z": 0
+         },
+         "size": {
+          "x": 1000,
+          "y": 120
+         }
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "10:30 AM  ·  Main Hall",
+           "style": {
+            "fontPostscriptName": "AvenirNext-DemiBold",
+            "sizePt": 46,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 0.95
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "canvas": {
+   "width": 1920,
+   "height": 1080
+  },
+  "modelVersion": 1
+ },
+ "output": {
+  "width": 1920,
+  "height": 1080,
+  "rate": {
+   "num": 60000,
+   "den": 1001
+  }
+ },
+ "script": [
+  {
+   "atMs": 0,
+   "command": {
+    "takeSlide": {
+     "presentationId": "welcome",
+     "slideId": "title"
+    }
+   }
+  }
+ ],
+ "goldenAtMs": [
+  500
+ ],
+ "durationMs": 3000
+}

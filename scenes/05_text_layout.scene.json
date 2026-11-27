@@ -1,0 +1,400 @@
+{
+ "name": "text_layout",
+ "description": "Text in a circular container path, justified text wrapping around an exclusion, and shrink-to-fit.",
+ "document": {
+  "id": "text-doc",
+  "presentations": [
+   {
+    "id": "text",
+    "name": "Text layout",
+    "slides": [
+     {
+      "id": "layout",
+      "label": "Containers",
+      "background": {
+       "color": {
+        "r": 0.11372549019607843,
+        "g": 0.1411764705882353,
+        "b": 0.2,
+        "a": 1.0
+       }
+      },
+      "elements": [
+       {
+        "id": "circle",
+        "transform": {
+         "position": {
+          "x": 80,
+          "y": 200,
+          "z": 0
+         },
+         "size": {
+          "x": 640,
+          "y": 640
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_ELLIPSE",
+         "fill": {
+          "r": 0.9450980392156862,
+          "g": 0.8901960784313725,
+          "b": 0.7843137254901961,
+          "a": 1.0
+         },
+         "shadows": [
+          {
+           "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.45
+           },
+           "offset": {
+            "x": 0,
+            "y": 10
+           },
+           "blurRadius": 30
+          }
+         ]
+        }
+       },
+       {
+        "id": "circle-text",
+        "transform": {
+         "position": {
+          "x": 80,
+          "y": 200,
+          "z": 0
+         },
+         "size": {
+          "x": 640,
+          "y": 640
+         }
+        },
+        "text": {
+         "rtf": "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyODIye1xmb250dGJsXGYwXGZuaWwgR2VvcmdpYTt9e1xjb2xvcnRibDtccmVkMzhcZ3JlZW4zMFxibHVlMjU7fVxwYXJkXHFjXHNsLTU2MFxzbG11bHQwIHtcZjBcZnM0MFxjZjEgVGV4dCBmbG93cyBpbnNpZGUgYW55IGNvbnRhaW5lciBwYXRoLCBtaW51cyBleGNsdXNpb25zIGl0IHdyYXBzIGFyb3VuZC4gVGhlIGVuZ2luZSBhbmQgdGhlIGVkaXRvciBzaGFyZSBvbmUgbGF5b3V0IGxpYnJhcnksIHNvIHRoZSBsaW5lIGJyZWFrcyB5b3Ugc2VlIHdoaWxlIGVkaXRpbmcgYXJlIHRoZSBsaW5lIGJyZWFrcyBvbiB0aGUgb3V0cHV0LiBUZXh0IGZsb3dzIGluc2lkZSBhbnkgY29udGFpbmVyIHBhdGgsIG1pbnVzIGV4Y2x1c2lvbnMgaXQgd3JhcHMgYXJvdW5kLiBUaGUgZW5naW5lIGFuZCB0aGUgZWRpdG9yIHNoYXJlIG9uZSBsYXlvdXQgbGlicmFyeSwgc28gdGhlIGxpbmUgYnJlYWtzIHlvdSBzZWUgd2hpbGUgZWRpdGluZyBhcmUgdGhlIGxpbmUgYnJlYWtzIG9uIHRoZSBvdXRwdXQuIFRleHQgZmxvd3MgaW5zaWRlIGFueSBjb250YWluZXIgcGF0aCwgbWludXMgZXhjbHVzaW9ucyBpdCB3cmFwcyBhcm91bmQuIFRoZSBlbmdpbmUgYW5kIHRoZSBlZGl0b3Igc2hhcmUgb25lIGxheW91dCBsaWJyYXJ5LCBzbyB0aGUgbGluZSBicmVha3MgeW91IHNlZSB3aGlsZSBlZGl0aW5nIGFyZSB0aGUgbGluZSBicmVha3Mgb24gdGhlIG91dHB1dC4gfX0=",
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         },
+         "verticalAlign": "VERTICAL_ALIGN_MIDDLE",
+         "container": {
+          "commands": [
+           {
+            "moveTo": {
+             "x": 640.0,
+             "y": 320.0
+            }
+           },
+           {
+            "cubicTo": {
+             "control1": {
+              "x": 640.0,
+              "y": 496.731119936
+             },
+             "control2": {
+              "x": 496.731119936,
+              "y": 640.0
+             },
+             "to": {
+              "x": 320.0,
+              "y": 640.0
+             }
+            }
+           },
+           {
+            "cubicTo": {
+             "control1": {
+              "x": 143.268880064,
+              "y": 640.0
+             },
+             "control2": {
+              "x": 0.0,
+              "y": 496.731119936
+             },
+             "to": {
+              "x": 0.0,
+              "y": 320.0
+             }
+            }
+           },
+           {
+            "cubicTo": {
+             "control1": {
+              "x": 0.0,
+              "y": 143.268880064
+             },
+             "control2": {
+              "x": 143.268880064,
+              "y": 0.0
+             },
+             "to": {
+              "x": 320.0,
+              "y": 0.0
+             }
+            }
+           },
+           {
+            "cubicTo": {
+             "control1": {
+              "x": 496.731119936,
+              "y": 0.0
+             },
+             "control2": {
+              "x": 640.0,
+              "y": 143.268880064
+             },
+             "to": {
+              "x": 640.0,
+              "y": 320.0
+             }
+            }
+           },
+           {
+            "close": {}
+           }
+          ]
+         }
+        }
+       },
+       {
+        "id": "panel",
+        "transform": {
+         "position": {
+          "x": 800,
+          "y": 120,
+          "z": 0
+         },
+         "size": {
+          "x": 1040,
+          "y": 520
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 0.07
+         },
+         "cornerRadius": 24
+        }
+       },
+       {
+        "id": "obstacle",
+        "transform": {
+         "position": {
+          "x": 1240,
+          "y": 250,
+          "z": 0
+         },
+         "size": {
+          "x": 240,
+          "y": 240
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_ELLIPSE",
+         "fill": {
+          "r": 0.16470588235294117,
+          "g": 0.615686274509804,
+          "b": 0.5607843137254902,
+          "a": 1.0
+         }
+        }
+       },
+       {
+        "id": "wrap-text",
+        "transform": {
+         "position": {
+          "x": 800,
+          "y": 120,
+          "z": 0
+         },
+         "size": {
+          "x": 1040,
+          "y": 520
+         }
+        },
+        "text": {
+         "rtf": "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyODIye1xmb250dGJsXGYwXGZuaWwgQXZlbmlyTmV4dC1SZWd1bGFyO1xmMVxmbmlsIEF2ZW5pck5leHQtRGVtaUJvbGQ7fXtcY29sb3J0Ymw7XHJlZDI0MlxncmVlbjI0MlxibHVlMjQyO1xyZWQyNTVcZ3JlZW4xOTFcYmx1ZTEwMjt9XHBhcmRccWpcc2EyMDAge1xmMFxmczQwXGNmMSBUZXh0IGZsb3dzIGluc2lkZSBhbnkgY29udGFpbmVyIHBhdGgsIG1pbnVzIGV4Y2x1c2lvbnMgaXQgd3JhcHMgYXJvdW5kLiBUaGUgZW5naW5lIGFuZCB0aGUgZWRpdG9yIHNoYXJlIG9uZSBsYXlvdXQgbGlicmFyeSwgc28gdGhlIGxpbmUgYnJlYWtzIHlvdSBzZWUgd2hpbGUgZWRpdGluZyBhcmUgdGhlIGxpbmUgYnJlYWtzIG9uIHRoZSBvdXRwdXQuIFRleHQgZmxvd3MgaW5zaWRlIGFueSBjb250YWluZXIgcGF0aCwgbWludXMgZXhjbHVzaW9ucyBpdCB3cmFwcyBhcm91bmQuIFRoZSBlbmdpbmUgYW5kIHRoZSBlZGl0b3Igc2hhcmUgb25lIGxheW91dCBsaWJyYXJ5LCBzbyB0aGUgbGluZSBicmVha3MgeW91IHNlZSB3aGlsZSBlZGl0aW5nIGFyZSB0aGUgbGluZSBicmVha3Mgb24gdGhlIG91dHB1dC4gVGV4dCBmbG93cyBpbnNpZGUgYW55IGNvbnRhaW5lciBwYXRoLCBtaW51cyBleGNsdXNpb25zIGl0IHdyYXBzIGFyb3VuZC4gVGhlIGVuZ2luZSBhbmQgdGhlIGVkaXRvciBzaGFyZSBvbmUgbGF5b3V0IGxpYnJhcnksIHNvIHRoZSBsaW5lIGJyZWFrcyB5b3Ugc2VlIHdoaWxlIGVkaXRpbmcgYXJlIHRoZSBsaW5lIGJyZWFrcyBvbiB0aGUgb3V0cHV0LiB9XHBhcgpccGFyZFxxaiB7XGYxXGZzMzZcY2YyIEV4Y2x1c2lvbnMgYXJlIGp1c3QgcGF0aHMgaW4gYm94IGNvb3JkaW5hdGVzLn19",
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         },
+         "verticalAlign": "VERTICAL_ALIGN_TOP",
+         "padding": {
+          "top": 30,
+          "left": 36,
+          "bottom": 30,
+          "right": 36
+         },
+         "exclusions": [
+          {
+           "commands": [
+            {
+             "moveTo": {
+              "x": 696.0,
+              "y": 250.0
+             }
+            },
+            {
+             "cubicTo": {
+              "control1": {
+               "x": 696.0,
+               "y": 325.11072597279997
+              },
+              "control2": {
+               "x": 635.1107259728,
+               "y": 386.0
+              },
+              "to": {
+               "x": 560.0,
+               "y": 386.0
+              }
+             }
+            },
+            {
+             "cubicTo": {
+              "control1": {
+               "x": 484.88927402720003,
+               "y": 386.0
+              },
+              "control2": {
+               "x": 424.0,
+               "y": 325.11072597279997
+              },
+              "to": {
+               "x": 424.0,
+               "y": 250.0
+              }
+             }
+            },
+            {
+             "cubicTo": {
+              "control1": {
+               "x": 424.0,
+               "y": 174.8892740272
+              },
+              "control2": {
+               "x": 484.88927402720003,
+               "y": 114.0
+              },
+              "to": {
+               "x": 560.0,
+               "y": 114.0
+              }
+             }
+            },
+            {
+             "cubicTo": {
+              "control1": {
+               "x": 635.1107259728,
+               "y": 114.0
+              },
+              "control2": {
+               "x": 696.0,
+               "y": 174.8892740272
+              },
+              "to": {
+               "x": 696.0,
+               "y": 250.0
+              }
+             }
+            },
+            {
+             "close": {}
+            }
+           ]
+          }
+         ]
+        }
+       },
+       {
+        "id": "shrink-box",
+        "transform": {
+         "position": {
+          "x": 800,
+          "y": 700,
+          "z": 0
+         },
+         "size": {
+          "x": 1040,
+          "y": 220
+         }
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "stroke": {
+          "color": {
+           "r": 1,
+           "g": 1,
+           "b": 1,
+           "a": 0.5
+          },
+          "width": 3
+         },
+         "cornerRadius": 12
+        }
+       },
+       {
+        "id": "shrink-text",
+        "transform": {
+         "position": {
+          "x": 800,
+          "y": 700,
+          "z": 0
+         },
+         "size": {
+          "x": 1040,
+          "y": 220
+         }
+        },
+        "text": {
+         "rtf": "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyODIye1xmb250dGJsXGYwXGZuaWwgQXZlbmlyTmV4dC1IZWF2eTt9e1xjb2xvcnRibDtccmVkMjU1XGdyZWVuMjU1XGJsdWUyNTU7fVxwYXJkXHFjIHtcZjBcZnMxNjBcY2YxIFNocmluayB0byBmaXQga2VlcHMgZXZlcnkgd29yZCBvbiBzY3JlZW4sIGhvd2V2ZXIgbG9uZyB0aGUgbGluZSBnZXRzLn19",
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         },
+         "fit": "TEXT_FIT_SHRINK_TO_FIT",
+         "padding": {
+          "top": 12,
+          "left": 24,
+          "bottom": 12,
+          "right": 24
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "canvas": {
+   "width": 1920,
+   "height": 1080
+  },
+  "modelVersion": 1
+ },
+ "output": {
+  "width": 1920,
+  "height": 1080,
+  "rate": {
+   "num": 60000,
+   "den": 1001
+  }
+ },
+ "script": [
+  {
+   "atMs": 0,
+   "command": {
+    "takeSlide": {
+     "presentationId": "text",
+     "slideId": "layout"
+    }
+   }
+  }
+ ],
+ "goldenAtMs": [
+  100
+ ],
+ "durationMs": 2000
+}

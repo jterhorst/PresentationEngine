@@ -1,0 +1,539 @@
+{
+ "name": "depth_3d",
+ "description": "Cards at several depths and Y rotations, a tilted floor and tilted text, through a 1800-unit perspective camera; draw order is by projected depth.",
+ "document": {
+  "id": "depth-doc",
+  "defaultPerspective": {
+   "distance": 1800
+  },
+  "presentations": [
+   {
+    "id": "depth",
+    "name": "Depth",
+    "slides": [
+     {
+      "id": "flow",
+      "label": "Cover flow",
+      "background": {
+       "color": {
+        "r": 0.0784313725490196,
+        "g": 0.08627450980392157,
+        "b": 0.12156862745098039,
+        "a": 1.0
+       }
+      },
+      "elements": [
+       {
+        "id": "floor",
+        "transform": {
+         "position": {
+          "x": -600,
+          "y": -480,
+          "z": -700
+         },
+         "size": {
+          "x": 3120,
+          "y": 2600
+         },
+         "rotation_x_deg": 85
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0.13725490196078433,
+          "g": 0.1568627450980392,
+          "b": 0.2196078431372549,
+          "a": 1.0
+         }
+        }
+       },
+       {
+        "id": "card-verse",
+        "transform": {
+         "position": {
+          "x": 100,
+          "y": 250,
+          "z": -320
+         },
+         "size": {
+          "x": 400,
+          "y": 540
+         },
+         "rotation_y_deg": 38.0
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0.9058823529411765,
+          "g": 0.43529411764705883,
+          "b": 0.3176470588235294,
+          "a": 1.0
+         },
+         "stroke": {
+          "color": {
+           "r": 1,
+           "g": 1,
+           "b": 1,
+           "a": 0.8
+          },
+          "width": 4
+         },
+         "cornerRadius": 36,
+         "shadows": [
+          {
+           "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.5
+           },
+           "offset": {
+            "x": 0,
+            "y": 18
+           },
+           "blurRadius": 40
+          }
+         ]
+        }
+       },
+       {
+        "id": "card-label-verse",
+        "transform": {
+         "position": {
+          "x": 100,
+          "y": 250,
+          "z": -319.5
+         },
+         "size": {
+          "x": 400,
+          "y": 540
+         },
+         "rotation_y_deg": 38.0
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Verse",
+           "style": {
+            "fontPostscriptName": "AvenirNext-Heavy",
+            "sizePt": 64,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "card-chorus",
+        "transform": {
+         "position": {
+          "x": 430,
+          "y": 250,
+          "z": -160
+         },
+         "size": {
+          "x": 400,
+          "y": 540
+         },
+         "rotation_y_deg": 38.0
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0.9568627450980393,
+          "g": 0.6352941176470588,
+          "b": 0.3803921568627451,
+          "a": 1.0
+         },
+         "stroke": {
+          "color": {
+           "r": 1,
+           "g": 1,
+           "b": 1,
+           "a": 0.8
+          },
+          "width": 4
+         },
+         "cornerRadius": 36,
+         "shadows": [
+          {
+           "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.5
+           },
+           "offset": {
+            "x": 0,
+            "y": 18
+           },
+           "blurRadius": 40
+          }
+         ]
+        }
+       },
+       {
+        "id": "card-label-chorus",
+        "transform": {
+         "position": {
+          "x": 430,
+          "y": 250,
+          "z": -159.5
+         },
+         "size": {
+          "x": 400,
+          "y": 540
+         },
+         "rotation_y_deg": 38.0
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Chorus",
+           "style": {
+            "fontPostscriptName": "AvenirNext-Heavy",
+            "sizePt": 64,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "card-bridge",
+        "transform": {
+         "position": {
+          "x": 760,
+          "y": 250,
+          "z": 220
+         },
+         "size": {
+          "x": 400,
+          "y": 540
+         },
+         "rotation_y_deg": 0
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0.16470588235294117,
+          "g": 0.615686274509804,
+          "b": 0.5607843137254902,
+          "a": 1.0
+         },
+         "stroke": {
+          "color": {
+           "r": 1,
+           "g": 1,
+           "b": 1,
+           "a": 0.8
+          },
+          "width": 4
+         },
+         "cornerRadius": 36,
+         "shadows": [
+          {
+           "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.5
+           },
+           "offset": {
+            "x": 0,
+            "y": 18
+           },
+           "blurRadius": 40
+          }
+         ]
+        }
+       },
+       {
+        "id": "card-label-bridge",
+        "transform": {
+         "position": {
+          "x": 760,
+          "y": 250,
+          "z": 220.5
+         },
+         "size": {
+          "x": 400,
+          "y": 540
+         },
+         "rotation_y_deg": 0
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Bridge",
+           "style": {
+            "fontPostscriptName": "AvenirNext-Heavy",
+            "sizePt": 64,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "card-tag",
+        "transform": {
+         "position": {
+          "x": 1090,
+          "y": 250,
+          "z": -160
+         },
+         "size": {
+          "x": 400,
+          "y": 540
+         },
+         "rotation_y_deg": -38.0
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0.27058823529411763,
+          "g": 0.4823529411764706,
+          "b": 0.615686274509804,
+          "a": 1.0
+         },
+         "stroke": {
+          "color": {
+           "r": 1,
+           "g": 1,
+           "b": 1,
+           "a": 0.8
+          },
+          "width": 4
+         },
+         "cornerRadius": 36,
+         "shadows": [
+          {
+           "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.5
+           },
+           "offset": {
+            "x": 0,
+            "y": 18
+           },
+           "blurRadius": 40
+          }
+         ]
+        }
+       },
+       {
+        "id": "card-label-tag",
+        "transform": {
+         "position": {
+          "x": 1090,
+          "y": 250,
+          "z": -159.5
+         },
+         "size": {
+          "x": 400,
+          "y": 540
+         },
+         "rotation_y_deg": -38.0
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Tag",
+           "style": {
+            "fontPostscriptName": "AvenirNext-Heavy",
+            "sizePt": 64,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "card-outro",
+        "transform": {
+         "position": {
+          "x": 1420,
+          "y": 250,
+          "z": -320
+         },
+         "size": {
+          "x": 400,
+          "y": 540
+         },
+         "rotation_y_deg": -38.0
+        },
+        "shape": {
+         "kind": "SHAPE_KIND_RECTANGLE",
+         "fill": {
+          "r": 0.5529411764705883,
+          "g": 0.37254901960784315,
+          "b": 0.8274509803921568,
+          "a": 1.0
+         },
+         "stroke": {
+          "color": {
+           "r": 1,
+           "g": 1,
+           "b": 1,
+           "a": 0.8
+          },
+          "width": 4
+         },
+         "cornerRadius": 36,
+         "shadows": [
+          {
+           "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.5
+           },
+           "offset": {
+            "x": 0,
+            "y": 18
+           },
+           "blurRadius": 40
+          }
+         ]
+        }
+       },
+       {
+        "id": "card-label-outro",
+        "transform": {
+         "position": {
+          "x": 1420,
+          "y": 250,
+          "z": -319.5
+         },
+         "size": {
+          "x": 400,
+          "y": 540
+         },
+         "rotation_y_deg": -38.0
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "Outro",
+           "style": {
+            "fontPostscriptName": "AvenirNext-Heavy",
+            "sizePt": 64,
+            "fill": {
+             "r": 1,
+             "g": 1,
+             "b": 1,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       },
+       {
+        "id": "crawl",
+        "transform": {
+         "position": {
+          "x": 160,
+          "y": 850,
+          "z": 100
+         },
+         "size": {
+          "x": 1600,
+          "y": 200
+         },
+         "rotation_x_deg": 60
+        },
+        "text": {
+         "runs": [
+          {
+           "text": "z is real depth: 0 is the base plane, positive comes toward you.",
+           "style": {
+            "fontPostscriptName": "AvenirNext-DemiBold",
+            "sizePt": 44,
+            "fill": {
+             "r": 1,
+             "g": 0.9,
+             "b": 0.5,
+             "a": 1
+            }
+           }
+          }
+         ],
+         "paragraph": {
+          "align": "TEXT_ALIGN_CENTER"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "canvas": {
+   "width": 1920,
+   "height": 1080
+  },
+  "modelVersion": 1
+ },
+ "output": {
+  "width": 1920,
+  "height": 1080,
+  "rate": {
+   "num": 60000,
+   "den": 1001
+  }
+ },
+ "script": [
+  {
+   "atMs": 0,
+   "command": {
+    "takeSlide": {
+     "presentationId": "depth",
+     "slideId": "flow"
+    }
+   }
+  }
+ ],
+ "goldenAtMs": [
+  100
+ ],
+ "durationMs": 2000
+}
